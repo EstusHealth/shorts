@@ -298,6 +298,12 @@ tr.tape-row > td{background:var(--bg);padding:20px 20px 22px;border-left:5px sol
 .review{display:flex;flex-direction:column;gap:16px;max-width:760px}
 .review-note{font-size:1.05rem}
 
+/* Browser-saved copy: backup bar */
+.databar{border:1px dashed var(--line);padding:16px 18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px}
+.databar p{max-width:60ch}
+.databar .is-error{color:var(--loss);font-weight:600}
+.databar-btns{display:flex;flex-wrap:wrap;gap:10px}
+
 /* Dialog */
 dialog{
   border:1px solid var(--line);
@@ -393,6 +399,8 @@ textarea{min-height:64px;resize:vertical}
   </header>
   <main id="app" class="stack"></main>
 </div>
+
+<input type="file" id="import-file" accept="application/json,.json" hidden>
 
 <dialog id="dlg" aria-labelledby="dlg-title">
   <form class="dlg-form" id="dlg-form" novalidate>
@@ -578,7 +586,8 @@ var state = {
   fights: [], loaded: false, slow: false, noDb: false, loadError: '',
   campId: null, openId: null, campVoice: null, tapeVoice: null,
   draft: '', pending: 0, saveError: '', savedOnce: false,
-  goal: '', goalEdit: false, goalDraft: ''
+  goal: '', goalEdit: false, goalDraft: '',
+  local: false, storageOk: true, importPending: null, importError: ''
 };
 var db = null;
 var chains = {};
@@ -698,11 +707,81 @@ function recordStats(m){
   };
 }
 
+/* ---------- browser storage, used when the page runs outside Claude ---------- */
+var LOCAL_KEY = 'fight-record-v1';
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function cleanImport(obj){
+  if (!obj || typeof obj !== 'object' || !obj.fights || typeof obj.fights !== 'object' || Array.isArray(obj.fights)) return null;
+  var fights = {}, n = 0;
+  Object.keys(obj.fights).forEach(function(id){
+    var f = obj.fights[id];
+    if (!/^[A-Za-z0-9_-]{1,80}$/.test(id) || !f || typeof f !== 'object' || Array.isArray(f) || typeof f.title !== 'string' || !f.title.trim()) return;
+    var c = clone(f);
+    c.status = c.status === 'done' ? 'done' : 'upcoming';
+    if (['win', 'loss', 'draw', 'nc'].indexOf(c.result) < 0) c.result = null;
+    c.actions = (Array.isArray(c.actions) ? c.actions : []).filter(function(a){ return a && typeof a.text === 'string'; })
+      .map(function(a, i){ return {id: /^[A-Za-z0-9_-]{1,40}$/.test(String(a.id)) ? String(a.id) : 'i' + i, text: a.text, done: !!a.done, first: !!a.first}; });
+    fights[id] = c; n++;
+  });
+  if (!n) return null;
+  var meta = {};
+  if (obj.meta && typeof obj.meta === 'object' && typeof obj.meta.topGoal === 'string') meta.topGoal = obj.meta.topGoal;
+  return {fights: fights, meta: meta, count: n};
+}
+function makeLocalDb(){
+  var store = {fights: {}, meta: {}}, ok = true, colSubs = [], metaSubs = [];
+  try {
+    var raw = window.localStorage.getItem(LOCAL_KEY);
+    if (raw){
+      var p = JSON.parse(raw);
+      if (p && typeof p === 'object'){
+        if (p.fights && typeof p.fights === 'object') store.fights = p.fights;
+        if (p.meta && typeof p.meta === 'object') store.meta = p.meta;
+      }
+    }
+  } catch (e){ ok = false; }
+  function colSnap(){
+    return {docs: Object.keys(store.fights).sort().map(function(id){
+      var b = clone(store.fights[id]);
+      return {id: id, exists: true, data: function(){ return b; }};
+    }), metadata: {fromCache: false}};
+  }
+  function metaSnap(){ var b = clone(store.meta); return {exists: true, data: function(){ return b; }, metadata: {fromCache: false}}; }
+  function commit(){
+    var saved = true;
+    try { window.localStorage.setItem(LOCAL_KEY, JSON.stringify(store)); } catch (e){ saved = false; }
+    colSubs.forEach(function(cb){ cb(colSnap()); });
+    metaSubs.forEach(function(cb){ cb(metaSnap()); });
+    return saved ? Promise.resolve() : Promise.reject({code: 'local_storage'});
+  }
+  function fightRef(id){
+    return {id: id,
+      set: function(d){ store.fights[id] = clone(d); return commit(); },
+      update: function(d){
+        if (!store.fights[id]) return Promise.reject({code: 'invalid_argument'});
+        for (var k in d) store.fights[id][k] = clone(d[k]);
+        return commit();
+      },
+      delete: function(){ delete store.fights[id]; return commit(); }};
+  }
+  return {
+    storageOk: ok,
+    collection: function(){ return {
+      onSnapshot: function(cb){ colSubs.push(cb); setTimeout(function(){ cb(colSnap()); }, 0); return function(){}; },
+      doc: fightRef }; },
+    doc: function(){ return {
+      onSnapshot: function(cb){ metaSubs.push(cb); setTimeout(function(){ cb(metaSnap()); }, 0); return function(){}; },
+      set: function(d){ store.meta = clone(d); return commit(); } }; },
+    exportAll: function(){ return {app: 'fight-record', version: 1, fights: clone(store.fights), meta: clone(store.meta)}; },
+    importAll: function(c){ store.fights = clone(c.fights); store.meta = clone(c.meta); return commit(); }
+  };
+}
+
 /* ---------- saving ---------- */
 function showStatus(){
   if (state.saveError){ statusEl.textContent = state.saveError; statusEl.className = 'is-error'; return; }
   statusEl.className = '';
-  statusEl.textContent = state.pending > 0 ? 'Saving' : (state.savedOnce ? 'Saved' : '');
+  statusEl.textContent = state.pending > 0 ? 'Saving' : (state.savedOnce ? (state.local ? 'Saved in this browser' : 'Saved') : '');
 }
 function write(key, fn){
   if (!db) return Promise.resolve();
@@ -711,7 +790,8 @@ function write(key, fn){
     state.savedOnce = true;
   }, function(e){
     var code = e && e.code;
-    state.saveError = code === 'quota_exceeded' ? 'Not saved. The record is full, delete a fight first.'
+    state.saveError = code === 'local_storage' ? 'Not saved. This browser is blocking storage for this page.'
+      : code === 'quota_exceeded' ? 'Not saved. The record is full, delete a fight first.'
       : code === 'invalid_argument' ? 'Not saved. You can view this record but not change it.'
       : 'Not saved. Check your connection and try again.';
   }).then(function(){ state.pending--; showStatus(); });
@@ -1031,6 +1111,23 @@ function recordHtml(m){
       '<tbody>' + rows + '</tbody></table></div></section>';
 }
 
+function dataBarHtml(){
+  if (!state.local) return '';
+  var n = state.fights.length;
+  if (state.importPending){
+    return '<section class="databar" aria-label="Your data"><p><strong>Replace the ' + n + (n === 1 ? ' fight' : ' fights') + ' saved in this browser?</strong> The file has ' + state.importPending.count + (state.importPending.count === 1 ? ' fight.' : ' fights.') + '</p>' +
+      '<div class="databar-btns"><button class="btn btn-small" type="button" data-act="import-confirm" data-key="import-confirm">Replace record</button>' +
+      '<button class="btn btn-ghost btn-small" type="button" data-act="import-cancel" data-key="import-cancel">Cancel</button></div></section>';
+  }
+  return '<section class="databar" aria-label="Your data"><div>' +
+      '<p>' + (state.storageOk ? 'Your record is saved in this browser only. Export it to back it up or to move it to another device.'
+                               : 'This browser is blocking storage for this page, so changes will be lost when you close it.') + '</p>' +
+      (state.importError ? '<p class="is-error">' + esc(state.importError) + '</p>' : '') + '</div>' +
+    '<div class="databar-btns">' +
+      (n ? '<button class="btn btn-ghost btn-small" type="button" data-act="export" data-key="export">Export record</button>' : '') +
+      '<button class="btn btn-ghost btn-small" type="button" data-act="import" data-key="import">Import record</button></div></section>';
+}
+
 function render(){
   var active = document.activeElement;
   var key = active && active.getAttribute ? active.getAttribute('data-key') : null;
@@ -1043,12 +1140,13 @@ function render(){
     if (state.loadError) html += '<div class="notice notice-warn"><p>' + esc(state.loadError) + '</p></div>';
     else if (state.slow) html += '<div class="notice"><p>This copy may be out of date. It will refresh when the connection returns.</p></div>';
     if (!state.fights.length){
-      html += '<div class="notice"><h2 class="section-title">No fights yet</h2><p class="muted">Add your first fight to start the record.</p></div>';
+      html += '<div class="notice"><h2 class="section-title">No fights yet</h2><p class="muted">' + (state.local ? 'Add your first fight, or import a record file below.' : 'Add your first fight to start the record.') + '</p></div>';
     } else {
       var m = model();
       html += tapeHtml(m) + campHtml(m) + scheduleHtml(m) + recordHtml(m);
     }
   }
+  if (state.loaded && !state.noDb) html += dataBarHtml();
   app.innerHTML = html;
   if (key && key !== 'add'){
     var again = app.querySelector('[data-key="' + key.replace(/"/g, '') + '"]');
@@ -1234,6 +1332,23 @@ document.addEventListener('click', function(e){
     var fid = t.getAttribute('data-aid');
     setActions(f, cleanActions(f).map(function(a){ a.first = a.id === fid ? !a.first : false; return a; }));
   }
+  else if (act === 'export' && db && db.exportAll){
+    try {
+      var blob = new Blob([JSON.stringify(db.exportAll(), null, 2)], {type: 'application/json'});
+      var url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = 'fight-record.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+    } catch (err){ state.importError = 'The export could not be created in this browser.'; render(); }
+  }
+  else if (act === 'import'){ state.importError = ''; el('import-file').value = ''; el('import-file').click(); }
+  else if (act === 'import-confirm' && state.importPending){
+    var pend = state.importPending; state.importPending = null;
+    state.campId = null; state.openId = null; state.campVoice = null; state.tapeVoice = null;
+    write('import', function(){ return db.importAll(pend); });
+    render();
+  }
+  else if (act === 'import-cancel'){ state.importPending = null; render(); }
   else if (act === 'goal-edit'){ state.goalEdit = true; state.goalDraft = state.goal; render(); var gi = el('goal-input'); if (gi) gi.focus(); }
   else if (act === 'goal-cancel'){ state.goalEdit = false; render(); }
 });
@@ -1272,6 +1387,21 @@ document.addEventListener('submit', function(e){
     render();
   }
 });
+el('import-file').addEventListener('change', function(){
+  var file = this.files && this.files[0];
+  if (!file || !db || !db.importAll) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    var cleaned = null;
+    try { cleaned = cleanImport(JSON.parse(String(reader.result))); } catch (err){ cleaned = null; }
+    if (!cleaned){ state.importError = 'That file is not a fight record export.'; render(); return; }
+    state.importError = '';
+    if (state.fights.length){ state.importPending = cleaned; render(); return; }
+    write('import', function(){ return db.importAll(cleaned); });
+  };
+  reader.onerror = function(){ state.importError = 'That file could not be read.'; render(); };
+  reader.readAsText(file);
+});
 el('dlg-cancel').addEventListener('click', closeDialog);
 el('dlg-delete').addEventListener('click', function(){
   if (!editing) return;
@@ -1285,33 +1415,42 @@ el('dlg-delete').addEventListener('click', function(){
 dlg.addEventListener('click', function(e){ if (e.target === dlg) closeDialog(); });
 
 /* ---------- boot ---------- */
+function subscribe(){
+  var timer = setTimeout(function(){ state.slow = true; render(); }, 10000);
+  db.collection('fights').onSnapshot(function(snap){
+    state.fights = snap.docs.map(function(doc){
+      var out = {id: doc.id}, body = doc.data() || {};
+      for (var k in body) out[k] = body[k];
+      return out;
+    });
+    state.loaded = true;
+    if (!snap.metadata || !snap.metadata.fromCache){ clearTimeout(timer); state.slow = false; }
+    render();
+  }, function(){
+    clearTimeout(timer);
+    state.loaded = true; state.slow = false;
+    state.loadError = 'The saved record stopped loading. Reopen the page to try again.';
+    render();
+  });
+  db.doc('meta/main').onSnapshot(function(snap){
+    var body = snap.exists ? (snap.data() || {}) : {};
+    var goal = typeof body.topGoal === 'string' ? body.topGoal : '';
+    if (goal !== state.goal){ state.goal = goal; if (!state.goalEdit) render(); }
+  }, function(){});
+}
 function boot(){
   render();
-  if (!window.claude || typeof window.claude.use !== 'function'){ state.noDb = true; render(); return; }
+  if (!window.claude || typeof window.claude.use !== 'function'){
+    // Outside Claude: keep the record in this browser.
+    db = makeLocalDb();
+    state.local = true; state.storageOk = db.storageOk;
+    subscribe();
+    return;
+  }
   window.claude.use('db').then(function(d){ return d; }, function(){ return null; }).then(function(d){
     db = d;
     if (!db){ state.noDb = true; render(); return; }
-    var timer = setTimeout(function(){ state.slow = true; render(); }, 10000);
-    db.collection('fights').onSnapshot(function(snap){
-      state.fights = snap.docs.map(function(doc){
-        var out = {id: doc.id}, body = doc.data() || {};
-        for (var k in body) out[k] = body[k];
-        return out;
-      });
-      state.loaded = true;
-      if (!snap.metadata || !snap.metadata.fromCache){ clearTimeout(timer); state.slow = false; }
-      render();
-    }, function(){
-      clearTimeout(timer);
-      state.loaded = true; state.slow = false;
-      state.loadError = 'The saved record stopped loading. Reopen the page to try again.';
-      render();
-    });
-    db.doc('meta/main').onSnapshot(function(snap){
-      var body = snap.exists ? (snap.data() || {}) : {};
-      var goal = typeof body.topGoal === 'string' ? body.topGoal : '';
-      if (goal !== state.goal){ state.goal = goal; if (!state.goalEdit) render(); }
-    }, function(){});
+    subscribe();
   });
 }
 boot();
