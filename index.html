@@ -601,7 +601,7 @@ var state = {
   campId: null, openId: null, campVoice: null, tapeVoice: null,
   draft: '', pending: 0, saveError: '', savedOnce: false,
   goal: '', goalEdit: false, goalDraft: '',
-  local: false, storageOk: true, importPending: null, importError: ''
+  local: false, storageOk: true, importPending: null, importError: '', sample: null
 };
 var db = null;
 var chains = {};
@@ -749,10 +749,11 @@ function cleanImport(obj){
   return {fights: fights, meta: meta, count: n};
 }
 function makeLocalDb(){
-  var store = {fights: {}, meta: {}}, ok = true, colSubs = [], metaSubs = [];
+  var store = {fights: {}, meta: {}}, ok = true, fresh = true, colSubs = [], metaSubs = [];
   try {
     var raw = window.localStorage.getItem(LOCAL_KEY);
     if (raw){
+      fresh = false;
       var p = JSON.parse(raw);
       if (p && typeof p === 'object'){
         if (p.fights && typeof p.fights === 'object') store.fights = p.fights;
@@ -786,6 +787,7 @@ function makeLocalDb(){
   }
   return {
     storageOk: ok,
+    isFresh: function(){ return fresh; },
     collection: function(){ return {
       onSnapshot: function(cb){ colSubs.push(cb); setTimeout(function(){ cb(colSnap()); }, 0); return function(){}; },
       doc: fightRef }; },
@@ -793,7 +795,7 @@ function makeLocalDb(){
       onSnapshot: function(cb){ metaSubs.push(cb); setTimeout(function(){ cb(metaSnap()); }, 0); return function(){}; },
       set: function(d){ store.meta = clone(d); return commit(); } }; },
     exportAll: function(){ return {app: 'fight-record', version: 1, fights: clone(store.fights), meta: clone(store.meta)}; },
-    importAll: function(c){ store.fights = clone(c.fights); store.meta = clone(c.meta); return commit(); }
+    importAll: function(c){ fresh = false; store.fights = clone(c.fights); store.meta = clone(c.meta); return commit(); }
   };
 }
 
@@ -1141,7 +1143,7 @@ function dataBarHtml(){
   if (!state.local) return '';
   var n = state.fights.length;
   if (state.importPending){
-    return '<section class="databar" aria-label="Your data"><p><strong>Replace the ' + n + (n === 1 ? ' fight' : ' fights') + ' saved in this browser?</strong> The file has ' + state.importPending.count + (state.importPending.count === 1 ? ' fight.' : ' fights.') + '</p>' +
+    return '<section class="databar" aria-label="Your data"><p><strong>Replace the ' + n + (n === 1 ? ' fight' : ' fights') + ' saved in this browser?</strong> The new record has ' + state.importPending.count + (state.importPending.count === 1 ? ' fight.' : ' fights.') + '</p>' +
       '<div class="databar-btns"><button class="btn btn-small" type="button" data-act="import-confirm" data-key="import-confirm">Replace record</button>' +
       '<button class="btn btn-ghost btn-small" type="button" data-act="import-cancel" data-key="import-cancel">Cancel</button></div></section>';
   }
@@ -1151,7 +1153,8 @@ function dataBarHtml(){
       (state.importError ? '<p class="is-error">' + esc(state.importError) + '</p>' : '') + '</div>' +
     '<div class="databar-btns">' +
       (n ? '<button class="btn btn-ghost btn-small" type="button" data-act="export" data-key="export">Export record</button>' : '') +
-      '<button class="btn btn-ghost btn-small" type="button" data-act="import" data-key="import">Import record</button></div></section>';
+      '<button class="btn btn-ghost btn-small" type="button" data-act="import" data-key="import">Import record</button>' +
+      (state.sample ? '<button class="btn btn-ghost btn-small" type="button" data-act="sample" data-key="sample">Load sample record</button>' : '') + '</div></section>';
 }
 
 function render(){
@@ -1382,6 +1385,11 @@ document.addEventListener('click', function(e){
     render();
   }
   else if (act === 'import-cancel'){ state.importPending = null; render(); }
+  else if (act === 'sample' && state.sample && db && db.importAll){
+    state.importError = '';
+    if (state.fights.length){ state.importPending = state.sample; render(); }
+    else { var smp = state.sample; write('import', function(){ return db.importAll(smp); }); }
+  }
   else if (act === 'goal-edit'){ state.goalEdit = true; state.goalDraft = state.goal; render(); var gi = el('goal-input'); if (gi) gi.focus(); }
   else if (act === 'goal-cancel'){ state.goalEdit = false; render(); }
 });
@@ -1478,6 +1486,16 @@ function boot(){
     db = makeLocalDb();
     state.local = true; state.storageOk = db.storageOk;
     subscribe();
+    // A sample record may sit beside the page. Load it on a first visit, and offer it afterwards.
+    if (typeof window.fetch === 'function'){
+      window.fetch('sample-record.json', {cache: 'no-store'}).then(function(r){ return r.ok ? r.json() : null; }).then(function(obj){
+        var c = obj ? cleanImport(obj) : null;
+        if (!c) return;
+        state.sample = c;
+        if (db.isFresh()) write('import', function(){ return db.importAll(c); });
+        else render();
+      }).catch(function(){});
+    }
     return;
   }
   window.claude.use('db').then(function(d){ return d; }, function(){ return null; }).then(function(d){
