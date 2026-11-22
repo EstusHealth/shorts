@@ -529,17 +529,31 @@ textarea{min-height:64px;resize:vertical}
     </div>
 
     <div class="dlg-lens">
-      <div><h3>Goggins</h3><p class="rule">Face the hard truth. Count the hard things already done.</p></div>
+      <div><h3>Goggins: taking souls</h3><p class="rule">Train for worse than it will be. Then beat their standard.</p></div>
       <div class="field" data-when="up">
-        <label for="f-mirror">The hard truth about this fight</label>
-        <textarea id="f-mirror" maxlength="400" placeholder="What you would rather not admit"></textarea>
+        <label for="f-harshest">The harshest version of this fight</label>
+        <textarea id="f-harshest" maxlength="400" placeholder="Your worst day, the toughest marker, the hardest questions"></textarea>
       </div>
-      <div class="field check" data-when="done">
-        <span class="lab">Cookie jar</span>
-        <label><input type="checkbox" id="f-jar"> Keep this fight in the cookie jar</label>
+      <div class="row2">
+        <div class="field">
+          <label for="f-hardexp" id="l-hardexp">How hard I expect it to be, 1 to 10</label>
+          <input type="number" id="f-hardexp" min="1" max="10" step="1">
+        </div>
+        <div class="field" data-when="done">
+          <label for="f-hardact">How hard it really was, 1 to 10</label>
+          <input type="number" id="f-hardact" min="1" max="10" step="1">
+        </div>
+      </div>
+      <div class="field" data-when="up">
+        <label for="f-noend">No end point: what I keep doing if the finish line moves</label>
+        <textarea id="f-noend" maxlength="400" placeholder="Train as if nobody will tell you when it ends"></textarea>
+      </div>
+      <div class="field" data-when="up">
+        <label for="f-souls">Taking souls: whose standard it is, and how I beat it</label>
+        <textarea id="f-souls" maxlength="400" placeholder="The person judging you, and the work that leaves them nothing to say"></textarea>
       </div>
       <div class="field" data-when="done">
-        <label for="f-proves">What it proves you can do</label>
+        <label for="f-proves">What it proved, and to whom</label>
         <textarea id="f-proves" maxlength="300"></textarea>
       </div>
     </div>
@@ -680,7 +694,7 @@ function betLabel(f){
   if (f.result === 'loss') return f.bet === 'good' ? 'Good bet, bad break' : 'Bad bet, fair result';
   return f.bet === 'good' ? 'Good bet' : 'Bad bet';
 }
-function isReviewed(f){ return !!(f.bet || f.own || f.good || f.lesson); }
+function isReviewed(f){ return !!(f.bet || f.own || f.good || f.lesson || hasNum(f.hardActual)); }
 function recordStats(m){
   var seq = m.done.filter(function(f){ return f.result === 'win' || f.result === 'loss' || f.result === 'draw'; });
   var after = {w:0, l:0, d:0, nc:0}, longest = 0, run = 0, afterN = 0;
@@ -703,7 +717,13 @@ function recordStats(m){
     goodBets: judged.filter(function(f){ return f.bet === 'good'; }).length,
     judged: judged.length,
     reviewed: m.done.filter(isReviewed).length,
-    jar: m.done.filter(function(f){ return f.jar; }).length
+    feared: (function(){
+      var both = m.done.filter(function(f){ return hasNum(f.hardExpected) && hasNum(f.hardActual); });
+      if (!both.length) return '';
+      var e = 0, a = 0;
+      both.forEach(function(f){ e += f.hardExpected; a += f.hardActual; });
+      return (e / both.length).toFixed(1) + ' v ' + (a / both.length).toFixed(1);
+    })()
   };
 }
 
@@ -812,7 +832,13 @@ function cleanActions(f){
 
 /* ---------- corner voices ---------- */
 function q(label, value, missing, bad, raw){ return {label: label, value: value || '', missing: missing, bad: !!bad, raw: !!raw}; }
-function campVoices(f, jarHtml){
+function hardLabel(f){
+  if (!hasNum(f.hardActual)) return '';
+  if (!hasNum(f.hardExpected)) return 'It was ' + f.hardActual + ' of 10.';
+  return 'Expected ' + f.hardExpected + ' of 10. It was ' + f.hardActual + '. ' +
+    (f.hardActual < f.hardExpected ? 'Easier than feared.' : f.hardActual > f.hardExpected ? 'Harder than expected.' : 'As expected.');
+}
+function campVoices(f){
   var surv = f.survivable === true ? 'Yes, you fight again' : f.survivable === false ? 'No, a loss ends the career' : '';
   return [
     {short: 'Bets', name: 'Thinking in Bets', rule: 'Judge the bet, not the result.', focus: 'f-odds', items: [
@@ -826,9 +852,11 @@ function campVoices(f, jarHtml){
     {short: 'Grit', name: 'Duckworth', rule: 'Hold the top goal. Never quit on a bad day.', focus: 'f-serves', items: [
       q('How it serves the belt', f.serves, 'Not answered'),
       q('Stop rule', f.stopRule, 'Not set. Decide it now, not mid-fight.')]},
-    {short: 'Goggins', name: 'Goggins', rule: 'Face the hard truth. Count the hard things already done.', focus: 'f-mirror', items: [
-      q('The hard truth', f.mirror, 'Not answered'),
-      q('Cookie jar', jarHtml, 'Empty. Open a past fight in your record and add it to the jar.', false, true)]},
+    {short: 'Goggins', name: 'Goggins: taking souls', rule: 'Train for worse than it will be. Then beat their standard.', focus: 'f-harshest', items: [
+      q('The harshest version', f.harshest, 'Not answered. Picture your worst day and the toughest marker.'),
+      q('How hard I expect it to be', hasNum(f.hardExpected) ? f.hardExpected + ' of 10' : '', 'Not rated'),
+      q('No end point', f.noEnd, 'Not answered. What do you keep doing if the finish line moves?'),
+      q('Taking souls', f.souls, 'Not answered. Whose standard is it, and what beats it so clearly they have nothing left to say?')]},
     {short: 'Jocko', name: 'Jocko', rule: 'Own all of it. If it goes wrong: good, now what?', focus: 'f-losspays', items: [
       q('If I lose: good, because', f.lossPays, 'Not answered'),
       q('Then I', f.rematch, 'No rematch plan')]}
@@ -845,8 +873,9 @@ function tapeVoices(f){
       q('Outside my control', f.notControl, 'Not answered')]},
     {short: 'Grit', name: 'Duckworth', rule: 'Hold the top goal. Never quit on a bad day.', focus: 'f-lesson', items: [
       q('What to practise next time', f.lesson, 'Not answered')]},
-    {short: 'Goggins', name: 'Goggins', rule: 'Face the hard truth. Count the hard things already done.', focus: 'f-proves', items: [
-      q('Cookie jar', f.jar ? (f.proves || 'In the jar') : '', 'Not in the jar. Add it if it proves something you can do.')]},
+    {short: 'Goggins', name: 'Goggins: taking souls', rule: 'Train for worse than it will be. Then beat their standard.', focus: 'f-hardact', items: [
+      q('Harder or easier than expected', hardLabel(f), 'Not rated. Score how hard it really was.'),
+      q('What it proved, and to whom', f.proves, 'Not answered')]},
     {short: 'Jocko', name: 'Jocko', rule: 'Own all of it. If it goes wrong: good, now what?', focus: 'f-own', items: [
       q('What I own', f.own, 'Not answered'),
       q('Good. What it made possible', f.good, 'Not answered')]}
@@ -941,9 +970,7 @@ function campHtml(m){
   var winEnd = rec(model({id: f.id, res: 'win'}).end);
   var lossEnd = rec(model({id: f.id, res: 'loss'}).end);
   var total = m.done.length + m.up.length;
-  var jar = m.done.filter(function(x){ return x.jar; }).reverse();
-  var jarHtml = jar.length ? '<span class="jar-list">' + jar.map(function(x){ return '<span>' + esc(x.proves || x.title) + '</span>'; }).join('') + '</span>' : '';
-  var voices = campVoices(f, jarHtml);
+  var voices = campVoices(f);
   var totalQ = 0, answered = 0;
   voices.forEach(function(v){ v.items.forEach(function(it){ totalQ++; if (it.value) answered++; }); });
 
@@ -1079,7 +1106,7 @@ function recordHtml(m){
     '<div><dt>Current streak</dt><dd>' + esc(s.streak || 'None') + '</dd></div>' +
     '<div><dt>Good bets</dt><dd>' + (s.judged ? s.goodBets + ' of ' + s.judged : 'None') + '</dd></div>' +
     '<div><dt>Tapes reviewed</dt><dd>' + s.reviewed + ' of ' + m.done.length + '</dd></div>' +
-    '<div><dt>In the cookie jar</dt><dd>' + s.jar + '</dd></div>' +
+    '<div><dt>Feared v real difficulty, of 10</dt><dd>' + esc(s.feared || 'None') + '</dd></div>' +
   '</dl>';
   var rows = m.doneRows.slice().reverse().map(function(r){
     var f = r.f, open = state.openId === f.id;
@@ -1092,7 +1119,6 @@ function recordHtml(m){
       '<td class="c-fight"><button type="button" class="row-toggle" aria-expanded="' + (open ? 'true' : 'false') + '" data-act="toggle-row" data-id="' + esc(f.id) + '" data-key="row-' + esc(f.id) + '">' +
           '<span class="caret" aria-hidden="true"></span><span class="t">' + esc(f.title) + '</span></button>' +
         (f.belt ? ' <span class="chip chip-belt">Title fight</span>' : '') +
-        (f.jar ? ' <span class="chip chip-jar">Cookie jar</span>' : '') +
         (f.method ? '<div class="fight-sub narrow-only">' + esc(f.method) + '</div>' : '') +
         (bet ? '<div class="fight-sub narrow-only">' + esc(bet) + '</div>' : '') +
       '</td>' +
@@ -1173,6 +1199,7 @@ function syncGroups(){
   }
   el('l-notcontrol').textContent = done ? 'What was outside my control' : 'Not in my control';
   el('l-odds').textContent = done ? 'Odds of a win you gave it, %' : 'Odds of a win, %';
+  el('l-hardexp').textContent = done ? 'How hard I expected it to be, 1 to 10' : 'How hard I expect it to be, 1 to 10';
 }
 function txt(id, v){ el(id).value = v || ''; }
 function openDialog(f, preset, focusId){
@@ -1209,8 +1236,11 @@ function openDialog(f, preset, focusId){
   txt('f-serves', f && f.serves);
   txt('f-stoprule', f && f.stopRule);
   txt('f-lesson', f && f.lesson);
-  txt('f-mirror', f && f.mirror);
-  el('f-jar').checked = !!(f && f.jar);
+  txt('f-harshest', f && f.harshest);
+  el('f-hardexp').value = f && hasNum(f.hardExpected) ? f.hardExpected : '';
+  el('f-hardact').value = f && hasNum(f.hardActual) ? f.hardActual : '';
+  txt('f-noend', f && f.noEnd);
+  txt('f-souls', f && f.souls);
   txt('f-proves', f && f.proves);
   txt('f-losspays', f && f.lossPays);
   txt('f-rematch', f && f.rematch);
@@ -1258,8 +1288,11 @@ function saveDialog(){
   data.serves = val('f-serves');
   data.stopRule = val('f-stoprule');
   data.lesson = val('f-lesson');
-  data.mirror = val('f-mirror');
-  data.jar = el('f-jar').checked;
+  data.harshest = val('f-harshest');
+  data.hardExpected = numOrNull('f-hardexp', 1, 10);
+  data.hardActual = numOrNull('f-hardact', 1, 10);
+  data.noEnd = val('f-noend');
+  data.souls = val('f-souls');
   data.proves = val('f-proves');
   data.lossPays = val('f-losspays');
   data.rematch = val('f-rematch');

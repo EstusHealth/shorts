@@ -2,7 +2,7 @@
 
 A personal decision record styled as a fighter's record: past bets as wins and losses,
 scheduled fights at two a year, a fight camp with next actions, and a five-voice corner
-(Thinking in Bets, the Stoics, Duckworth, Goggins, Jocko).
+(Thinking in Bets, the Stoics, Duckworth, Goggins on taking souls, Jocko).
 
 `index.html` at the top of the repo is the whole page, so it loads at the site's home address. No build step.
 
