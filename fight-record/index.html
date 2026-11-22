@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liam's Fight Record</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:ital,wght@0,600;0,700;1,700;1,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Fight night. One dark world by choice: arena black, white type, gold for the belt and
+     whatever is ahead, blue for today. Green and red only ever mean win and loss.
+     Layout: single left-aligned column, max 1080px. The tale of the tape is the hero, then the
+     bout card for the next fight, the schedule as a bout list, and the record as a record table. */
+  --bg:#07090E;
+  --panel:#10151F;
+  --raised:#182030;
+  --line:#28324A;
+  --ink:#F5F7FB;
+  --muted:#98A4B8;
+  --gold:#F4BC3D;
+  --gold-ink:#1B1303;
+  --gold-soft:rgba(244,188,61,0.14);
+  --blue:#4C86FF;
+  --win:#2FD18B;
+  --win-ink:#03170E;
+  --win-soft:rgba(47,209,139,0.14);
+  --loss:#F2513F;
+  --loss-soft:rgba(242,81,63,0.16);
+  --nc:#6F8FCB;
+  --font-display:"Barlow Condensed","Arial Narrow","Roboto Condensed",Impact,sans-serif;
+  --font-body:"Barlow","Segoe UI",system-ui,-apple-system,sans-serif;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(820px 380px at 8% -60px, rgba(76,134,255,0.20), transparent 62%),
+    radial-gradient(820px 380px at 92% -60px, rgba(244,188,61,0.15), transparent 62%),
+    var(--bg);
+  background-repeat:no-repeat;
+  background-color:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:16px;
+  line-height:1.5;
+  font-variant-numeric:tabular-nums;
+}
+.page{
+  max-width:1080px;
+  margin:0 auto;
+  padding:34px 22px 80px;
+  display:flex;
+  flex-direction:column;
+  gap:44px;
+}
+.stack{display:flex;flex-direction:column;gap:52px}
+.page > *,.stack > *,.block > *{min-width:0}
+h1,h2,h3,h4,p,ul,ol,dl,dd{margin:0}
+ul,ol{padding:0;list-style:none}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1;text-wrap:balance}
+h1{font-size:clamp(3.2rem,11vw,6.4rem);font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:-0.005em}
+h2{font-size:clamp(2rem,6.2vw,3.5rem);font-weight:800;font-style:italic;text-transform:uppercase}
+.section-title{font-size:clamp(1.7rem,4.4vw,2.3rem);font-weight:800;font-style:italic;text-transform:uppercase}
+h3{font-size:1.45rem;font-weight:700;line-height:1.1}
+h4{font-size:1.35rem;font-weight:700;line-height:1.1}
+.muted{color:var(--muted)}
+
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn{
+  border:1px solid var(--gold);
+  background:var(--gold);
+  color:var(--gold-ink);
+  padding:10px 18px;
+  border-radius:3px;
+  font-weight:600;
+  line-height:1.2;
+}
+.btn:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{border-color:var(--ink);filter:none}
+.btn-small{padding:6px 11px;font-size:0.9rem}
+.btn-danger{background:transparent;color:var(--loss);border-color:var(--loss)}
+.link{background:none;border:0;padding:0;color:var(--gold);text-decoration:underline;text-underline-offset:3px;font-weight:500}
+.tag{
+  display:inline-block;background:var(--gold);color:var(--gold-ink);
+  font-family:var(--font-display);font-weight:700;font-size:1.05rem;line-height:1.35;
+  text-transform:uppercase;letter-spacing:0.03em;padding:0 13px 1px;transform:skewX(-11deg);
+}
+.tag > span{display:inline-block;transform:skewX(11deg)}
+.chip{display:inline-block;padding:1px 9px;border-radius:999px;font-size:0.8rem;font-weight:600;white-space:nowrap;vertical-align:middle}
+.chip-belt{background:var(--gold-soft);color:var(--gold);border:1px solid var(--gold)}
+.chip-late{background:var(--loss-soft);color:var(--loss);border:1px solid var(--loss)}
+.chip-jar{background:rgba(76,134,255,0.16);color:#9DBBFF;border:1px solid rgba(76,134,255,0.6)}
+
+/* Header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px}
+.top-sub{color:var(--muted);font-size:1.1rem;margin-top:6px}
+.top-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+#save-status{font-size:0.9rem;color:var(--muted);min-height:1.3em}
+#save-status.is-error{color:var(--loss);font-weight:600}
+
+.notice{border:1px solid var(--line);background:var(--panel);padding:16px 18px;border-radius:3px}
+.notice-warn{border-color:var(--gold);background:var(--gold-soft)}
+
+/* Belt and tale of the tape */
+.belt-line{
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;
+  padding:12px 18px;
+  background:linear-gradient(90deg,#F7C955,#E9A921);
+  color:var(--gold-ink);
+}
+.belt-line .belt-name{font-family:var(--font-display);font-weight:800;font-style:italic;font-size:1.35rem;text-transform:uppercase;line-height:1}
+.belt-line .belt-goal{font-weight:600;font-size:1.08rem;flex:1;min-width:200px;overflow-wrap:anywhere}
+.belt-line .link{color:var(--gold-ink)}
+.belt-line :focus-visible{outline-color:var(--gold-ink)}
+.belt-form{display:flex;flex-wrap:wrap;gap:8px;flex:1;min-width:220px}
+.belt-form input{flex:1;min-width:160px;background:#FFF8E3;color:var(--gold-ink);border-color:var(--gold-ink)}
+.belt-form .btn{background:var(--gold-ink);color:#FCE7A8;border-color:var(--gold-ink)}
+.belt-form .btn-ghost{background:transparent;color:var(--gold-ink)}
+.tape{
+  position:relative;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-top:0;
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  overflow:hidden;
+}
+.tape::before,.tape::after{content:"";position:absolute;top:0;bottom:0;width:46%;pointer-events:none}
+.tape::before{left:0;background:linear-gradient(90deg,rgba(76,134,255,0.22),transparent)}
+.tape::after{right:0;background:linear-gradient(270deg,rgba(244,188,61,0.20),transparent)}
+.tape > div{position:relative;z-index:1;padding:11px 22px;border-top:1px solid var(--line);display:flex;align-items:center}
+.tape .t-head{border-top:0;padding-top:20px;padding-bottom:0;font-family:var(--font-display);font-weight:700;font-size:1.35rem;text-transform:uppercase;letter-spacing:0.03em}
+.tape .t-head.t-left{color:#9DBBFF}
+.tape .t-head.t-right{color:var(--gold)}
+.tape .t-left{justify-content:flex-end;text-align:right}
+.tape .t-right{justify-content:flex-start;text-align:left}
+.tape .t-mid{justify-content:center;color:var(--muted);font-size:0.95rem;min-width:118px;text-align:center}
+.tape .t-rec{border-top:0;padding-top:0;padding-bottom:14px}
+.tape .t-big{
+  font-family:var(--font-display);
+  font-weight:800;font-style:italic;
+  font-size:clamp(4rem,17vw,9rem);
+  line-height:0.92;
+  white-space:nowrap;
+}
+.tape .t-big small{font-size:0.22em;font-weight:700;font-style:normal;color:var(--muted);margin-left:0.4em}
+.tape .t-num{font-family:var(--font-display);font-weight:700;font-style:italic;font-size:2.1rem;line-height:1}
+.tape-note{margin-top:14px;color:var(--muted);max-width:70ch}
+
+/* Bout card for the next fight */
+.camp{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-top:5px solid var(--gold);
+  padding:26px 28px 28px;
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+}
+.camp-head{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.camp-vs{color:var(--muted);font-size:1.1rem}
+.camp-pitch{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.15fr);gap:14px}
+.out{background:var(--raised);padding:14px 18px 16px;display:flex;flex-direction:column;gap:2px;border-left:5px solid var(--line)}
+.out-win{border-left-color:var(--win)}
+.out-loss{border-left-color:var(--loss)}
+.out-label{font-weight:600}
+.out-win .out-label{color:var(--win)}
+.out-loss .out-label{color:var(--loss)}
+.out-rec{font-family:var(--font-display);font-weight:800;font-style:italic;font-size:clamp(2.6rem,7vw,3.6rem);line-height:1}
+.out-cap{color:var(--muted);font-size:0.92rem}
+.odds{background:var(--raised);padding:14px 18px 16px;display:flex;flex-direction:column;gap:10px;justify-content:space-between}
+.odds-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-weight:600}
+.odds-top b{font-family:var(--font-display);font-weight:800;font-style:italic;font-size:clamp(2.6rem,7vw,3.6rem);line-height:1;color:var(--gold)}
+.odds-track{height:10px;background:var(--bg);border:1px solid var(--line);position:relative}
+.odds-track i{position:absolute;left:0;top:0;bottom:0;background:var(--gold)}
+.odds.is-unset .odds-track{border-style:dashed}
+.one-row{color:var(--muted);font-size:1.05rem}
+.one-row b{color:var(--ink);font-weight:600}
+
+.camp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:36px}
+.camp-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.col-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px}
+.count{color:var(--muted);font-size:0.95rem}
+.rule{color:var(--muted)}
+
+.todo{display:flex;flex-direction:column}
+.todo li{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:start;padding:11px 0;border-bottom:1px solid var(--line)}
+.todo li:first-child{border-top:1px solid var(--line)}
+.todo input[type="checkbox"]{width:20px;height:20px;margin:2px 0 0;accent-color:var(--win)}
+.todo label{overflow-wrap:anywhere;font-size:1.05rem}
+.todo .is-done label{color:var(--muted);text-decoration:line-through}
+.todo .is-first label{font-weight:600}
+.todo-first{background:none;border:1px solid var(--line);border-radius:999px;padding:0 10px;font-size:0.82rem;font-weight:600;color:var(--muted);line-height:1.8;white-space:nowrap}
+.todo-first:hover{border-color:var(--gold);color:var(--gold)}
+.todo-first[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.todo-x{background:none;border:0;color:var(--muted);padding:0 4px;font-size:1.2rem;line-height:1.3}
+.todo-x:hover{color:var(--loss)}
+.todo-add{display:flex;gap:8px}
+.todo-add input{flex:1;min-width:0}
+
+/* Corner voices */
+.voices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.voice{
+  background:var(--raised);border:1px solid var(--line);border-bottom:3px solid var(--line);
+  padding:9px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;
+}
+.voice:hover{border-color:var(--muted)}
+.voice[aria-selected="true"]{background:var(--bg);border-color:var(--gold);border-bottom-color:var(--gold)}
+.v-short{font-family:var(--font-display);font-weight:700;font-size:1.15rem;line-height:1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.voice[aria-selected="true"] .v-short{color:var(--gold)}
+.pips{display:flex;gap:4px}
+.pips i{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--muted)}
+.pips i.on{background:var(--win);border-color:var(--win)}
+.pips i.bad{background:var(--loss);border-color:var(--loss)}
+.voice-panel{background:var(--bg);border:1px solid var(--line);padding:18px 20px 20px;display:flex;flex-direction:column;gap:16px}
+.vp-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.vp-head > div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.qa{display:flex;flex-direction:column;gap:14px}
+.qa-row{display:grid;grid-template-columns:14px 1fr;gap:12px;align-items:start}
+.mark{width:12px;height:12px;margin-top:6px;border:2px solid var(--muted)}
+.mark.is-ok{background:var(--win);border-color:var(--win)}
+.mark.is-bad{background:var(--loss);border-color:var(--loss);border-radius:50%}
+.qa-row dt{font-weight:600;color:var(--muted);font-size:0.95rem}
+.qa-row dd{font-size:1.08rem;overflow-wrap:anywhere}
+.qa-row dd.is-missing{color:var(--gold);font-size:1rem}
+.jar-list{display:flex;flex-direction:column;gap:4px}
+
+.camp-foot{display:flex;flex-direction:column;gap:16px}
+.verdict{padding:12px 16px;font-weight:600;font-size:1.05rem;border-left:5px solid}
+.verdict.is-go{background:var(--win-soft);color:var(--win);border-color:var(--win)}
+.verdict.is-wait{background:var(--gold-soft);color:var(--gold);border-color:var(--gold)}
+.verdict.is-stop{background:var(--loss-soft);color:var(--loss);border-color:var(--loss)}
+.camp-btns{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+/* Sections */
+.block{display:flex;flex-direction:column;gap:16px}
+.block-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 18px}
+
+/* Schedule as a bout list */
+.bouts{display:flex;flex-direction:column;gap:6px}
+.bout{
+  background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--line);
+  display:grid;grid-template-columns:104px minmax(0,1fr) 76px auto 92px 112px;
+  gap:6px 18px;align-items:center;padding:13px 16px;
+}
+.bout.is-camp{border-left-color:var(--gold)}
+.bout.is-open{background:transparent;border-style:dashed;border-left-style:dashed}
+.bout-when{font-family:var(--font-display);font-weight:700;font-size:1.2rem;text-transform:uppercase;color:var(--muted);line-height:1.1}
+.bout.is-camp .bout-when{color:var(--gold)}
+.bout-title{font-weight:600;font-size:1.1rem}
+.bout-sub{color:var(--muted);font-size:0.92rem}
+.bout.is-open .bout-title{color:var(--muted);font-weight:500}
+.bout-stat{display:flex;flex-direction:column;line-height:1.1}
+.bout-stat b{font-family:var(--font-display);font-weight:700;font-style:italic;font-size:1.65rem}
+.bout-stat small{color:var(--muted);font-size:0.78rem}
+.bout-stat.is-empty b{color:var(--line)}
+.bout-btn{text-align:right}
+.bout.is-open .bout-btn{grid-column:3 / -1}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:6px 13px;font-family:var(--font-display);font-weight:700;font-size:1.15rem;line-height:1;color:var(--muted)}
+.seg button + button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"].seg-w{background:var(--win);color:var(--win-ink)}
+.seg button[aria-pressed="true"].seg-l{background:var(--loss);color:#fff}
+
+/* Record */
+.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.stats div{background:var(--panel);border:1px solid var(--line);padding:12px 14px 13px;display:flex;flex-direction:column-reverse;gap:4px}
+.stats dt{color:var(--muted);font-size:0.88rem;line-height:1.25}
+.stats dd{font-family:var(--font-display);font-weight:800;font-style:italic;font-size:2.1rem;line-height:1}
+.scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;min-width:520px}
+th,td{padding:12px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+tbody tr:last-child td{border-bottom:0}
+th{font-family:var(--font-display);font-weight:700;font-size:1.02rem;letter-spacing:0.03em;text-transform:uppercase;color:var(--muted);white-space:nowrap;background:var(--raised)}
+td.c-res{width:1%;white-space:nowrap;text-align:center;font-family:var(--font-display);font-weight:800;font-style:italic;font-size:1.3rem;text-transform:uppercase;line-height:1.2}
+td.c-rec{white-space:nowrap;font-family:var(--font-display);font-weight:700;font-style:italic;font-size:1.45rem;line-height:1.15}
+td.c-when{white-space:nowrap}
+td.c-fight{min-width:200px}
+.fight-sub{color:var(--muted);font-size:0.9rem}
+.narrow-only{display:none}
+td.res-win{background:var(--win);color:var(--win-ink)}
+td.res-loss{background:var(--loss);color:#fff}
+td.res-nc{background:var(--nc);color:#06101F}
+td.res-draw{background:#56617A;color:#fff}
+.row-toggle{background:none;border:0;padding:0;text-align:left;font-weight:600;font-size:1.08rem;display:inline-flex;gap:9px;align-items:baseline}
+.row-toggle .caret{display:inline-block;width:0;height:0;border-left:7px solid var(--gold);border-top:5px solid transparent;border-bottom:5px solid transparent;transform:translateY(-1px)}
+.row-toggle[aria-expanded="true"] .caret{transform:rotate(90deg)}
+.row-toggle:hover .t{text-decoration:underline;text-underline-offset:3px}
+tr.tape-row > td{background:var(--bg);padding:20px 20px 22px;border-left:5px solid var(--gold)}
+.review{display:flex;flex-direction:column;gap:16px;max-width:760px}
+.review-note{font-size:1.05rem}
+
+/* Dialog */
+dialog{
+  border:1px solid var(--line);
+  border-top:5px solid var(--gold);
+  background:var(--panel);
+  color:var(--ink);
+  padding:0;
+  width:min(640px,calc(100vw - 24px));
+  max-height:calc(100% - 24px);
+  border-radius:3px;
+}
+dialog::backdrop{background:rgba(3,5,9,0.72)}
+.dlg-form{padding:24px 24px 0;display:flex;flex-direction:column;gap:18px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field > label,.field > .lab{font-weight:600;font-size:0.95rem}
+.field .hint{font-size:0.88rem;color:var(--loss)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+input[type="text"],input[type="number"],select,textarea{
+  font:inherit;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:3px;padding:9px 11px;width:100%;
+}
+input::placeholder,textarea::placeholder{color:#6B778C}
+textarea{min-height:64px;resize:vertical}
+.radios{display:flex;gap:18px;flex-wrap:wrap}
+.radios label,.check label{font-weight:500;display:inline-flex;gap:8px;align-items:center}
+.radios input,.check input{width:18px;height:18px;accent-color:var(--gold)}
+.dlg-lens{border-top:1px solid var(--line);padding-top:18px;display:flex;flex-direction:column;gap:14px}
+.dlg-lens h3{color:var(--gold)}
+.dlg-lens .rule{margin-top:4px}
+.dlg-foot{
+  position:sticky;bottom:0;
+  margin:0 -24px;padding:14px 24px 18px;
+  background:var(--panel);border-top:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+}
+.dlg-foot .grow{display:flex;gap:10px}
+
+@media (max-width:860px){
+  .camp-pitch{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .camp-pitch .odds{grid-column:1 / -1;order:-1}
+  .camp-grid{grid-template-columns:minmax(0,1fr)}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .bout{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"when btn" "main main" "ctl ctl";gap:8px 12px;padding:14px 14px 15px}
+  .bout-when{grid-area:when}
+  .bout-main{grid-area:main}
+  .bout-btn{grid-area:btn}
+  .bout-ctl{grid-area:ctl;display:flex;align-items:center;gap:20px;margin-top:4px}
+  .bout.is-open{grid-template-areas:"when btn" "main main"}
+  .bout.is-open .bout-btn{grid-column:auto}
+}
+@media (min-width:861px){
+  .bout-ctl{display:contents}
+}
+@media (max-width:760px){
+  .page{gap:30px;padding:22px 14px 64px}
+  .stack{gap:40px}
+  .camp{padding:20px 16px 22px;gap:20px}
+  .col-opt{display:none}
+  .narrow-only{display:block}
+  .tape > div{padding:9px 12px}
+  .tape .t-mid{min-width:0;font-size:0.85rem;padding-left:4px;padding-right:4px}
+  .tape .t-big{font-size:clamp(3rem,17vw,5.4rem)}
+  .tape .t-head{font-size:1.1rem;padding-top:16px}
+  .row2{grid-template-columns:1fr}
+  table{min-width:0}
+  table.rec td.c-fight{min-width:0;overflow-wrap:break-word}
+  td.c-when{white-space:normal;min-width:82px}
+  th,td{padding:11px 8px}
+  .stats dd{font-size:1.75rem;white-space:nowrap}
+  .stats div{padding:11px 11px 12px}
+  td.c-res{font-size:1.1rem}
+  tr.tape-row > td{padding:16px 12px 18px}
+  .voice-panel{padding:16px 14px 18px}
+  .v-short{font-size:1rem}
+  .pips i{width:7px;height:7px}
+}
+@media (prefers-reduced-motion: reduce){
+  *{scroll-behavior:auto !important;transition:none !important}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <div>
+      <h1>Liam Fagan</h1>
+      <p class="top-sub">Fight record. Two fights a year to 2029.</p>
+    </div>
+    <div class="top-actions">
+      <span id="save-status" role="status" aria-live="polite"></span>
+      <button class="btn" type="button" data-act="add" data-key="add">Add a fight</button>
+    </div>
+  </header>
+  <main id="app" class="stack"></main>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlg-title">
+  <form class="dlg-form" id="dlg-form" novalidate>
+    <h2 id="dlg-title">Add a fight</h2>
+    <div class="field">
+      <label for="f-title">Fight</label>
+      <input type="text" id="f-title" maxlength="120" autocomplete="off" placeholder="The bet you are making">
+      <span class="hint" id="f-title-err" hidden>Give the fight a name.</span>
+    </div>
+    <div class="field">
+      <label for="f-opponent">Decided by</label>
+      <input type="text" id="f-opponent" maxlength="120" autocomplete="off" placeholder="Who or what decides the result">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <span class="lab">Status</span>
+        <div class="radios">
+          <label><input type="radio" name="f-status" id="f-status-up" value="upcoming"> Scheduled</label>
+          <label><input type="radio" name="f-status" id="f-status-done" value="done"> Fought</label>
+        </div>
+      </div>
+      <div class="field check">
+        <span class="lab">Stakes</span>
+        <label><input type="checkbox" id="f-belt"> Title fight</label>
+      </div>
+    </div>
+    <div class="field" data-when="up">
+      <label for="f-slot">Slot</label>
+      <select id="f-slot"></select>
+    </div>
+    <div class="row2" data-when="done">
+      <div class="field">
+        <label for="f-result">Result</label>
+        <select id="f-result">
+          <option value="">Not scored yet</option>
+          <option value="win">Win</option>
+          <option value="loss">Loss</option>
+          <option value="draw">Draw</option>
+          <option value="nc">No contest</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-method">Method</label>
+        <input type="text" id="f-method" maxlength="120" autocomplete="off" placeholder="How it ended">
+      </div>
+    </div>
+    <div class="row2" data-when="done">
+      <div class="field">
+        <label for="f-month">Month</label>
+        <select id="f-month"></select>
+      </div>
+      <div class="field">
+        <label for="f-year">Year</label>
+        <input type="number" id="f-year" min="1980" max="2100" step="1" placeholder="Year not set">
+      </div>
+    </div>
+    <div class="field">
+      <label for="f-notes">Notes</label>
+      <textarea id="f-notes" maxlength="600"></textarea>
+    </div>
+
+    <div class="dlg-lens">
+      <div><h3>Thinking in Bets</h3><p class="rule">Judge the bet, not the result.</p></div>
+      <div class="field">
+        <label for="f-odds" id="l-odds">Odds of a win, %</label>
+        <input type="number" id="f-odds" min="0" max="100" step="1" placeholder="Your honest number">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="f-money">Cost in money</label>
+          <input type="text" id="f-money" maxlength="40" autocomplete="off" placeholder="$">
+        </div>
+        <div class="field">
+          <label for="f-months">Cost in months</label>
+          <input type="number" id="f-months" min="0" max="120" step="1">
+        </div>
+      </div>
+      <div class="field" data-when="up">
+        <label for="f-survivable">Is a loss survivable?</label>
+        <select id="f-survivable">
+          <option value="">Not answered</option>
+          <option value="yes">Yes, I fight again</option>
+          <option value="no">No, it ends the career</option>
+        </select>
+      </div>
+      <div class="field" data-when="up">
+        <label for="f-premortem">If it goes wrong, the likely reason</label>
+        <textarea id="f-premortem" maxlength="400" placeholder="Picture the loss. What caused it?"></textarea>
+      </div>
+      <div class="field" data-when="done">
+        <label for="f-bet">Was it a good bet with what you knew then?</label>
+        <select id="f-bet">
+          <option value="">Not judged yet</option>
+          <option value="good">Good bet</option>
+          <option value="bad">Bad bet</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="dlg-lens">
+      <div><h3>The Stoics</h3><p class="rule">Work on what is yours. Let go of the rest.</p></div>
+      <div class="field" data-when="up">
+        <label for="f-incontrol">In my control</label>
+        <textarea id="f-incontrol" maxlength="400" placeholder="Your preparation, effort and choices"></textarea>
+      </div>
+      <div class="field">
+        <label for="f-notcontrol" id="l-notcontrol">Not in my control</label>
+        <textarea id="f-notcontrol" maxlength="400" placeholder="Other people's decisions, timing, luck"></textarea>
+      </div>
+    </div>
+
+    <div class="dlg-lens">
+      <div><h3>Duckworth</h3><p class="rule">Hold the top goal. Never quit on a bad day.</p></div>
+      <div class="field" data-when="up">
+        <label for="f-serves">How this fight serves the belt</label>
+        <textarea id="f-serves" maxlength="400"></textarea>
+      </div>
+      <div class="field" data-when="up">
+        <label for="f-stoprule">Stop rule</label>
+        <textarea id="f-stoprule" maxlength="400" placeholder="The time limit and the result that means you stop"></textarea>
+      </div>
+      <div class="field" data-when="done">
+        <label for="f-lesson">What to practise next time</label>
+        <textarea id="f-lesson" maxlength="400" placeholder="One specific thing, not a vague lesson"></textarea>
+      </div>
+    </div>
+
+    <div class="dlg-lens">
+      <div><h3>Goggins</h3><p class="rule">Face the hard truth. Count the hard things already done.</p></div>
+      <div class="field" data-when="up">
+        <label for="f-mirror">The hard truth about this fight</label>
+        <textarea id="f-mirror" maxlength="400" placeholder="What you would rather not admit"></textarea>
+      </div>
+      <div class="field check" data-when="done">
+        <span class="lab">Cookie jar</span>
+        <label><input type="checkbox" id="f-jar"> Keep this fight in the cookie jar</label>
+      </div>
+      <div class="field" data-when="done">
+        <label for="f-proves">What it proves you can do</label>
+        <textarea id="f-proves" maxlength="300"></textarea>
+      </div>
+    </div>
+
+    <div class="dlg-lens">
+      <div><h3>Jocko</h3><p class="rule">Own all of it. If it goes wrong: good, now what?</p></div>
+      <div class="field" data-when="up">
+        <label for="f-losspays">If I lose: good, because</label>
+        <textarea id="f-losspays" maxlength="400" placeholder="Skills, contacts, content or data you keep either way"></textarea>
+      </div>
+      <div class="field" data-when="up">
+        <label for="f-rematch">Then I</label>
+        <textarea id="f-rematch" maxlength="400" placeholder="The rematch plan"></textarea>
+      </div>
+      <div class="field" data-when="done">
+        <label for="f-own">What I own</label>
+        <textarea id="f-own" maxlength="400" placeholder="Your part in how it went, win or lose"></textarea>
+      </div>
+      <div class="field" data-when="done">
+        <label for="f-good">Good. What it made possible</label>
+        <textarea id="f-good" maxlength="400" placeholder="What came next because of it"></textarea>
+      </div>
+    </div>
+
+    <div class="dlg-foot">
+      <div class="grow">
+        <button class="btn" type="submit" id="dlg-save">Save fight</button>
+        <button class="btn btn-ghost" type="button" id="dlg-cancel">Cancel</button>
+      </div>
+      <button class="btn btn-danger" type="button" id="dlg-delete" hidden>Delete fight</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function(){
+'use strict';
+
+var END_YEAR = 2029;
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var RESULT_LABEL = {win:'Win', loss:'Loss', draw:'Draw', nc:'NC'};
+
+var state = {
+  fights: [], loaded: false, slow: false, noDb: false, loadError: '',
+  campId: null, openId: null, campVoice: null, tapeVoice: null,
+  draft: '', pending: 0, saveError: '', savedOnce: false,
+  goal: '', goalEdit: false, goalDraft: ''
+};
+var db = null;
+var chains = {};
+var editing = null;      // fight being edited in the dialog, or null for a new one
+var deleteArmed = false;
+
+var app = document.getElementById('app');
+var statusEl = document.getElementById('save-status');
+var dlg = document.getElementById('dlg');
+function el(id){ return document.getElementById(id); }
+
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function pad(n){ return (n < 10 ? '0' : '') + n; }
+function hasNum(v){ return typeof v === 'number' && !isNaN(v); }
+
+/* ---------- dates and slots ---------- */
+function nowHalf(){ var d = new Date(); return {y: d.getFullYear(), h: d.getMonth() < 6 ? 1 : 2}; }
+function slotSort(slot){ var p = String(slot).split('-'); return Number(p[0]) + (Number(p[1]) === 1 ? 0.25 : 0.75); }
+function slotLabel(slot){ var p = String(slot).split('-'); return (Number(p[1]) === 1 ? 'Early ' : 'Late ') + p[0]; }
+function dateSort(date){ var p = String(date).split('-'); var m = Number(p[1]); return Number(p[0]) + (m ? (m - 0.5) / 12 : 0.5); }
+function dateLabel(date){
+  if (!date) return '';
+  var p = String(date).split('-'); var m = Number(p[1]);
+  return m ? MONTHS[m - 1] + ' ' + p[0] : p[0];
+}
+function agoLabel(date){
+  if (!date) return '';
+  var d = new Date(), p = String(date).split('-'), y = Number(p[0]), m = Number(p[1]);
+  if (!m){
+    var yd = d.getFullYear() - y;
+    return yd <= 0 ? 'this year' : yd === 1 ? '1 year ago' : yd + ' years ago';
+  }
+  var months = (d.getFullYear() * 12 + d.getMonth() + 1) - (y * 12 + m);
+  if (months <= 0) return 'this month';
+  if (months < 24) return months + (months === 1 ? ' month ago' : ' months ago');
+  return Math.floor(months / 12) + ' years ago';
+}
+function fightSort(f){
+  if (f.status === 'done'){
+    if (f.date) return dateSort(f.date);
+    return hasNum(f.sort) ? f.sort : 0;
+  }
+  if (f.slot) return slotSort(f.slot);
+  return hasNum(f.sort) ? f.sort : 9999;
+}
+function allSlots(){
+  var n = nowHalf(), out = [];
+  for (var y = n.y; y <= END_YEAR; y++){
+    for (var h = 1; h <= 2; h++){
+      if (y === n.y && h < n.h) continue;
+      out.push(y + '-' + h);
+    }
+  }
+  return out;
+}
+
+/* ---------- record maths ---------- */
+function bump(t, r){
+  if (r === 'win') t.w++; else if (r === 'loss') t.l++; else if (r === 'draw') t.d++; else if (r === 'nc') t.nc++;
+}
+function rec(t){ return t.w + '-' + t.l + (t.d ? '-' + t.d : '') + (t.nc ? ' (' + t.nc + ' NC)' : ''); }
+function model(force){
+  var bySort = function(a, b){ return fightSort(a) - fightSort(b); };
+  var done = state.fights.filter(function(f){ return f.status === 'done'; }).sort(bySort);
+  var up = state.fights.filter(function(f){ return f.status !== 'done'; }).sort(bySort);
+  var t = {w:0, l:0, d:0, nc:0};
+  var doneRows = done.map(function(f){ bump(t, f.result); return {f: f, rec: rec(t)}; });
+  var now = {w:t.w, l:t.l, d:t.d, nc:t.nc};
+  var upRows = up.map(function(f){
+    var r = f.sim === 'loss' ? 'loss' : 'win';
+    if (force && force.id === f.id) r = force.res;
+    bump(t, r);
+    return {f: f, rec: rec(t), res: r};
+  });
+  return {done: done, up: up, doneRows: doneRows, upRows: upRows, now: now, end: {w:t.w, l:t.l, d:t.d, nc:t.nc}};
+}
+function costLabel(f){
+  var parts = [];
+  if (f.costMoney) parts.push(f.costMoney);
+  if (hasNum(f.costMonths)) parts.push(f.costMonths + (f.costMonths === 1 ? ' month' : ' months'));
+  return parts.join(' and ');
+}
+function betLabel(f){
+  if (f.bet !== 'good' && f.bet !== 'bad') return '';
+  if (f.result === 'win') return f.bet === 'good' ? 'Earned win' : 'Lucky win';
+  if (f.result === 'loss') return f.bet === 'good' ? 'Good bet, bad break' : 'Bad bet, fair result';
+  return f.bet === 'good' ? 'Good bet' : 'Bad bet';
+}
+function isReviewed(f){ return !!(f.bet || f.own || f.good || f.lesson); }
+function recordStats(m){
+  var seq = m.done.filter(function(f){ return f.result === 'win' || f.result === 'loss' || f.result === 'draw'; });
+  var after = {w:0, l:0, d:0, nc:0}, longest = 0, run = 0, afterN = 0;
+  seq.forEach(function(f, i){
+    if (f.result === 'win'){ run++; if (run > longest) longest = run; } else run = 0;
+    if (f.result === 'loss' && seq[i + 1]){ bump(after, seq[i + 1].result); afterN++; }
+  });
+  var streak = '';
+  if (seq.length){
+    var last = seq[seq.length - 1].result, n = 0;
+    for (var i = seq.length - 1; i >= 0 && seq[i].result === last; i--) n++;
+    var word = last === 'win' ? 'win' : last === 'loss' ? 'loss' : 'draw';
+    streak = n + ' ' + word + (n === 1 ? '' : (word === 'loss' ? 'es' : 's'));
+  }
+  var judged = m.done.filter(function(f){ return f.bet === 'good' || f.bet === 'bad'; });
+  return {
+    afterLoss: afterN ? rec(after) : '',
+    longest: longest,
+    streak: streak,
+    goodBets: judged.filter(function(f){ return f.bet === 'good'; }).length,
+    judged: judged.length,
+    reviewed: m.done.filter(isReviewed).length,
+    jar: m.done.filter(function(f){ return f.jar; }).length
+  };
+}
+
+/* ---------- saving ---------- */
+function showStatus(){
+  if (state.saveError){ statusEl.textContent = state.saveError; statusEl.className = 'is-error'; return; }
+  statusEl.className = '';
+  statusEl.textContent = state.pending > 0 ? 'Saving' : (state.savedOnce ? 'Saved' : '');
+}
+function write(key, fn){
+  if (!db) return Promise.resolve();
+  state.pending++; state.saveError = ''; showStatus();
+  var p = (chains[key] || Promise.resolve()).then(fn).then(function(){
+    state.savedOnce = true;
+  }, function(e){
+    var code = e && e.code;
+    state.saveError = code === 'quota_exceeded' ? 'Not saved. The record is full, delete a fight first.'
+      : code === 'invalid_argument' ? 'Not saved. You can view this record but not change it.'
+      : 'Not saved. Check your connection and try again.';
+  }).then(function(){ state.pending--; showStatus(); });
+  chains[key] = p;
+  return p;
+}
+function refOf(id){ return db.collection('fights').doc(id); }
+function findFight(id){
+  for (var i = 0; i < state.fights.length; i++) if (state.fights[i].id === id) return state.fights[i];
+  return null;
+}
+function newId(){ return 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function cleanActions(f){
+  return (Array.isArray(f.actions) ? f.actions : []).map(function(a){
+    return {id: a.id, text: a.text, done: !!a.done, first: !!a.first};
+  });
+}
+
+/* ---------- corner voices ---------- */
+function q(label, value, missing, bad, raw){ return {label: label, value: value || '', missing: missing, bad: !!bad, raw: !!raw}; }
+function campVoices(f, jarHtml){
+  var surv = f.survivable === true ? 'Yes, you fight again' : f.survivable === false ? 'No, a loss ends the career' : '';
+  return [
+    {short: 'Bets', name: 'Thinking in Bets', rule: 'Judge the bet, not the result.', focus: 'f-odds', items: [
+      q('Odds of a win', hasNum(f.odds) ? f.odds + '%' : '', 'Not set. Put an honest number on it.'),
+      q('The cost', costLabel(f), 'Not set'),
+      q('Is a loss survivable?', surv, 'Not answered', f.survivable === false),
+      q('If it goes wrong, the likely reason', f.premortem, 'Not answered. Picture the loss and name the cause.')]},
+    {short: 'Stoics', name: 'The Stoics', rule: 'Work on what is yours. Let go of the rest.', focus: 'f-incontrol', items: [
+      q('In my control', f.inControl, 'Not answered'),
+      q('Not in my control', f.notControl, 'Not answered')]},
+    {short: 'Grit', name: 'Duckworth', rule: 'Hold the top goal. Never quit on a bad day.', focus: 'f-serves', items: [
+      q('How it serves the belt', f.serves, 'Not answered'),
+      q('Stop rule', f.stopRule, 'Not set. Decide it now, not mid-fight.')]},
+    {short: 'Goggins', name: 'Goggins', rule: 'Face the hard truth. Count the hard things already done.', focus: 'f-mirror', items: [
+      q('The hard truth', f.mirror, 'Not answered'),
+      q('Cookie jar', jarHtml, 'Empty. Open a past fight in your record and add it to the jar.', false, true)]},
+    {short: 'Jocko', name: 'Jocko', rule: 'Own all of it. If it goes wrong: good, now what?', focus: 'f-losspays', items: [
+      q('If I lose: good, because', f.lossPays, 'Not answered'),
+      q('Then I', f.rematch, 'No rematch plan')]}
+  ];
+}
+function tapeVoices(f){
+  var bet = [betLabel(f), hasNum(f.odds) ? 'You gave it ' + f.odds + '%.' : ''].filter(Boolean).join('. ').replace(/\.\.$/, '.');
+  var cost = costLabel(f);
+  var bets = [q('The bet', betLabel(f) ? bet : '', 'Not judged. Was it a good bet with what you knew then?')];
+  if (cost) bets.push(q('What it cost', cost, ''));
+  return [
+    {short: 'Bets', name: 'Thinking in Bets', rule: 'Judge the bet, not the result.', focus: 'f-bet', items: bets},
+    {short: 'Stoics', name: 'The Stoics', rule: 'Work on what is yours. Let go of the rest.', focus: 'f-notcontrol', items: [
+      q('Outside my control', f.notControl, 'Not answered')]},
+    {short: 'Grit', name: 'Duckworth', rule: 'Hold the top goal. Never quit on a bad day.', focus: 'f-lesson', items: [
+      q('What to practise next time', f.lesson, 'Not answered')]},
+    {short: 'Goggins', name: 'Goggins', rule: 'Face the hard truth. Count the hard things already done.', focus: 'f-proves', items: [
+      q('Cookie jar', f.jar ? (f.proves || 'In the jar') : '', 'Not in the jar. Add it if it proves something you can do.')]},
+    {short: 'Jocko', name: 'Jocko', rule: 'Own all of it. If it goes wrong: good, now what?', focus: 'f-own', items: [
+      q('What I own', f.own, 'Not answered'),
+      q('Good. What it made possible', f.good, 'Not answered')]}
+  ];
+}
+function firstOpenVoice(voices){
+  for (var i = 0; i < voices.length; i++){
+    if (voices[i].items.some(function(it){ return !it.value || it.bad; })) return i;
+  }
+  return 0;
+}
+function voicesHtml(voices, sel, ctx, f){
+  if (sel == null || sel < 0 || sel >= voices.length) sel = firstOpenVoice(voices);
+  var strip = voices.map(function(v, i){
+    var done = v.items.filter(function(it){ return it.value && !it.bad; }).length;
+    return '<button type="button" role="tab" class="voice" aria-selected="' + (i === sel ? 'true' : 'false') + '" data-act="voice" data-ctx="' + ctx + '" data-i="' + i + '" data-key="voice-' + ctx + '-' + i + '" aria-label="' + esc(v.name) + ', ' + done + ' of ' + v.items.length + ' answered">' +
+      '<span class="v-short">' + esc(v.short) + '</span>' +
+      '<span class="pips" aria-hidden="true">' + v.items.map(function(it){ return '<i class="' + (it.bad ? 'bad' : it.value ? 'on' : '') + '"></i>'; }).join('') + '</span></button>';
+  }).join('');
+  var v = voices[sel];
+  var rows = v.items.map(function(it){
+    return '<div class="qa-row"><span class="mark ' + (it.bad ? 'is-bad' : it.value ? 'is-ok' : '') + '" aria-hidden="true"></span>' +
+      '<div><dt>' + esc(it.label) + '</dt><dd' + (it.value ? '' : ' class="is-missing"') + '>' + (it.value ? (it.raw ? it.value : esc(it.value)) : esc(it.missing)) + '</dd></div></div>';
+  }).join('');
+  return '<div class="voices" role="tablist" aria-label="Corner voices">' + strip + '</div>' +
+    '<div class="voice-panel" role="tabpanel">' +
+      '<div class="vp-head"><div><h4>' + esc(v.name) + '</h4><p class="rule">' + esc(v.rule) + '</p></div>' +
+        '<button class="btn btn-ghost btn-small" type="button" data-act="edit" data-id="' + esc(f.id) + '" data-focus="' + v.focus + '" data-key="vedit-' + ctx + '-' + sel + '">Edit answers</button></div>' +
+      '<dl class="qa">' + rows + '</dl>' +
+    '</div>';
+}
+
+/* ---------- belt and tape ---------- */
+function beltHtml(){
+  if (state.goalEdit){
+    return '<div class="belt-line"><span class="belt-name">The belt</span>' +
+      '<form class="belt-form" data-form="goal">' +
+        '<input type="text" id="goal-input" data-key="goal-input" maxlength="160" autocomplete="off" aria-label="Your top goal" placeholder="The one goal every fight serves" value="' + esc(state.goalDraft) + '">' +
+        '<button class="btn btn-small" type="submit" data-key="goal-save">Save belt</button>' +
+        '<button class="btn btn-ghost btn-small" type="button" data-act="goal-cancel" data-key="goal-cancel">Cancel</button>' +
+      '</form></div>';
+  }
+  return '<div class="belt-line"><span class="belt-name">The belt</span>' +
+    '<span class="belt-goal">' + (state.goal ? esc(state.goal) : 'Not set. Name the one goal every fight serves.') + '</span>' +
+    '<button class="link" type="button" data-act="goal-edit" data-key="goal-edit">' + (state.goal ? 'Edit' : 'Set the belt') + '</button></div>';
+}
+function tapeHtml(m){
+  var slots = allSlots();
+  var taken = {};
+  m.up.forEach(function(f){ if (f.slot) taken[f.slot] = true; });
+  var open = slots.filter(function(s){ return !taken[s]; }).length;
+  var unscored = m.done.filter(function(f){ return !f.result; }).length;
+  function big(t){ return t.w + '-' + t.l + (t.d ? '-' + t.d : '') + (t.nc ? '<small>' + t.nc + ' NC</small>' : ''); }
+  var nNow = m.done.length, nEnd = m.done.length + m.up.length;
+  var withOdds = m.up.filter(function(f){ return hasNum(f.odds); }).length;
+  var ew = m.now.w, elo = m.now.l;
+  m.up.forEach(function(f){
+    var p = hasNum(f.odds) ? Math.max(0, Math.min(100, f.odds)) / 100 : (f.sim === 'loss' ? 0 : 1);
+    ew += p; elo += 1 - p;
+  });
+  var note = slots.length + ' slots left at two fights a year. ' + m.up.length + ' booked, ' + open + ' open.';
+  if (withOdds) note += ' The odds row uses your own numbers on ' + withOdds + ' of ' + m.up.length + ' booked fights.';
+  if (unscored) note += ' ' + unscored + (unscored === 1 ? ' fight is' : ' fights are') + ' not scored yet.';
+  return '<section aria-label="Tale of the tape">' + beltHtml() +
+    '<div class="tape">' +
+      '<div class="t-head t-left">Today</div><div class="t-head t-mid"></div><div class="t-head t-right">End of 2029</div>' +
+      '<div class="t-rec t-left"><span class="t-big">' + big(m.now) + '</span></div>' +
+      '<div class="t-rec t-mid">Record</div>' +
+      '<div class="t-rec t-right"><span class="t-big">' + big(m.end) + '</span></div>' +
+      '<div class="t-left"><span class="t-num">' + m.now.w + '</span></div><div class="t-mid">Wins</div><div class="t-right"><span class="t-num">' + m.end.w + '</span></div>' +
+      '<div class="t-left"><span class="t-num">' + m.now.l + '</span></div><div class="t-mid">Losses</div><div class="t-right"><span class="t-num">' + m.end.l + '</span></div>' +
+      '<div class="t-left"><span class="t-num">' + nNow + '</span></div><div class="t-mid">Fights</div><div class="t-right"><span class="t-num">' + nEnd + '</span></div>' +
+      (withOdds ? '<div class="t-left"></div><div class="t-mid">By your odds</div><div class="t-right"><span class="t-num">' + ew.toFixed(1) + '-' + elo.toFixed(1) + '</span></div>' : '') +
+    '</div>' +
+    '<p class="tape-note">' + esc(note) + '</p>' +
+  '</section>';
+}
+
+/* ---------- camp ---------- */
+function campFightOf(m){
+  if (!m.up.length) return null;
+  var f = (state.campId && findFight(state.campId)) || m.up[0];
+  return f.status === 'done' ? m.up[0] : f;
+}
+function campHtml(m){
+  var f = campFightOf(m);
+  if (!f){
+    return '<section id="camp" class="notice"><h2 class="section-title">No fight booked</h2>' +
+      '<p class="muted">Book one from an open slot below, or add a fight.</p></section>';
+  }
+  var isNext = f.id === m.up[0].id;
+  var winEnd = rec(model({id: f.id, res: 'win'}).end);
+  var lossEnd = rec(model({id: f.id, res: 'loss'}).end);
+  var total = m.done.length + m.up.length;
+  var jar = m.done.filter(function(x){ return x.jar; }).reverse();
+  var jarHtml = jar.length ? '<span class="jar-list">' + jar.map(function(x){ return '<span>' + esc(x.proves || x.title) + '</span>'; }).join('') + '</span>' : '';
+  var voices = campVoices(f, jarHtml);
+  var totalQ = 0, answered = 0;
+  voices.forEach(function(v){ v.items.forEach(function(it){ totalQ++; if (it.value) answered++; }); });
+
+  var missing = [];
+  if (f.survivable !== true && f.survivable !== false) missing.push('whether a loss is survivable');
+  if (!hasNum(f.odds)) missing.push('your odds');
+  if (!f.inControl) missing.push('what is in your control');
+  if (!f.stopRule) missing.push('the stop rule');
+  if (!f.lossPays) missing.push('what a loss still pays');
+  var verdict;
+  if (f.survivable === false) verdict = '<p class="verdict is-stop">A loss here is not survivable. Change the terms before you take it.</p>';
+  else if (missing.length) verdict = '<p class="verdict is-wait">Camp is not finished. Still to answer: ' + esc(missing.join(', ')) + '.</p>';
+  else verdict = '<p class="verdict is-go">Camp is finished. Take the fight and work the actions.</p>';
+
+  var oddsHtml = hasNum(f.odds)
+    ? '<div class="odds"><div class="odds-top"><span>Your odds of a win</span><b>' + f.odds + '%</b></div>' +
+      '<div class="odds-track" aria-hidden="true"><i style="width:' + Math.max(0, Math.min(100, f.odds)) + '%"></i></div></div>'
+    : '<div class="odds is-unset"><div class="odds-top"><span>Your odds of a win</span>' +
+      '<button class="link" type="button" data-act="edit" data-id="' + esc(f.id) + '" data-focus="f-odds" data-key="setodds-' + esc(f.id) + '">Set your odds</button></div>' +
+      '<div class="odds-track" aria-hidden="true"></div></div>';
+
+  var actions = cleanActions(f);
+  actions.sort(function(a, b){ return (b.first ? 1 : 0) - (a.first ? 1 : 0); });
+  var doneCount = actions.filter(function(a){ return a.done; }).length;
+  var list = actions.map(function(a){
+    var cid = 'chk-' + f.id + '-' + a.id;
+    return '<li class="' + (a.done ? 'is-done ' : '') + (a.first ? 'is-first' : '') + '">' +
+      '<input type="checkbox" id="' + esc(cid) + '" data-act="toggle" data-id="' + esc(f.id) + '" data-aid="' + esc(a.id) + '" data-key="' + esc(cid) + '"' + (a.done ? ' checked' : '') + '>' +
+      '<label for="' + esc(cid) + '">' + esc(a.text) + '</label>' +
+      '<button type="button" class="todo-first" aria-pressed="' + (a.first ? 'true' : 'false') + '" data-act="first" data-id="' + esc(f.id) + '" data-aid="' + esc(a.id) + '" data-key="first-' + esc(cid) + '">' + (a.first ? 'First' : 'Do first') + '</button>' +
+      '<button type="button" class="todo-x" data-act="del-action" data-id="' + esc(f.id) + '" data-aid="' + esc(a.id) + '" data-key="del-' + esc(cid) + '" aria-label="Remove action: ' + esc(a.text) + '">&times;</button>' +
+    '</li>';
+  }).join('');
+
+  return '<section id="camp" class="camp" aria-label="Fight camp">' +
+    '<div class="camp-head">' +
+      '<span class="tag"><span>' + (isNext ? 'Next fight' : 'Scheduled fight') + (f.slot ? ', ' + esc(slotLabel(f.slot)) : '') + '</span></span>' +
+      '<h2>' + esc(f.title) + '</h2>' +
+      ((f.opponent || f.belt) ? '<p class="camp-vs">' + (f.opponent ? 'Decided by ' + esc(f.opponent) : '') + (f.belt ? ' <span class="chip chip-belt">Title fight</span>' : '') + '</p>' : '') +
+    '</div>' +
+    '<div class="camp-pitch">' +
+      '<div class="out out-win"><span class="out-label">Win it</span><span class="out-rec">' + esc(winEnd) + '</span><span class="out-cap">is how 2029 ends</span></div>' +
+      '<div class="out out-loss"><span class="out-label">Lose it</span><span class="out-rec">' + esc(lossEnd) + '</span><span class="out-cap">is how 2029 ends</span></div>' +
+      oddsHtml +
+    '</div>' +
+    '<p class="one-row"><b>One row of ' + total + ' either way.</b> In three years this result is a single line on the record.</p>' +
+    '<div class="camp-grid">' +
+      '<div class="camp-col"><div class="col-head"><h3>Next actions</h3>' +
+        (actions.length ? '<span class="count">' + doneCount + ' of ' + actions.length + ' done</span>' : '') + '</div>' +
+        (actions.length ? '<ul class="todo">' + list + '</ul>'
+                        : '<p class="muted">No actions yet. Add the first thing to do for this fight.</p>') +
+        '<form class="todo-add" data-form="add-action" data-id="' + esc(f.id) + '">' +
+          '<input type="text" id="new-action" data-key="new-action" maxlength="160" autocomplete="off" aria-label="New action" placeholder="Add an action in your control" value="' + esc(state.draft) + '">' +
+          '<button class="btn btn-ghost" type="submit" data-key="new-action-btn">Add</button>' +
+        '</form>' +
+      '</div>' +
+      '<div class="camp-col"><div class="col-head"><h3>Your corner</h3><span class="count">' + answered + ' of ' + totalQ + ' answered</span></div>' +
+        voicesHtml(voices, state.campVoice, 'camp', f) + '</div>' +
+    '</div>' +
+    '<div class="camp-foot">' + verdict +
+      '<div class="camp-btns">' +
+        '<button class="btn" type="button" data-act="result" data-id="' + esc(f.id) + '" data-key="result-' + esc(f.id) + '">Record the result</button>' +
+        '<button class="btn btn-ghost" type="button" data-act="edit" data-id="' + esc(f.id) + '" data-key="campedit-' + esc(f.id) + '">Edit fight</button>' +
+        (isNext ? '' : '<button class="link" type="button" data-act="camp-next" data-key="camp-next">Back to the next fight</button>') +
+      '</div>' +
+    '</div>' +
+  '</section>';
+}
+
+/* ---------- schedule ---------- */
+function scheduleHtml(m){
+  var campFight = campFightOf(m);
+  var campId = campFight ? campFight.id : null;
+  var nh = nowHalf(), nowSort = slotSort(nh.y + '-' + nh.h);
+  var items = [];
+  m.upRows.forEach(function(r){ items.push({sort: fightSort(r.f), row: r}); });
+  var taken = {};
+  m.up.forEach(function(f){ if (f.slot) taken[f.slot] = true; });
+  allSlots().forEach(function(s){ if (!taken[s]) items.push({sort: slotSort(s) + 0.001, slot: s}); });
+  items.sort(function(a, b){ return a.sort - b.sort; });
+  var rows = items.map(function(it){
+    if (it.slot){
+      return '<li class="bout is-open"><div class="bout-when">' + esc(slotLabel(it.slot)) + '</div>' +
+        '<div class="bout-main"><span class="bout-title">Open slot</span></div>' +
+        '<div class="bout-btn"><button class="btn btn-ghost btn-small" type="button" data-act="book" data-slot="' + esc(it.slot) + '" data-key="book-' + esc(it.slot) + '">Book a fight</button></div></li>';
+    }
+    var f = it.row.f, res = it.row.res;
+    var late = f.slot && slotSort(f.slot) < nowSort;
+    var cost = costLabel(f);
+    var sub = res === 'loss' && f.rematch ? 'Then: ' + f.rematch : [f.opponent ? 'Decided by ' + f.opponent : '', cost ? cost + ' at stake' : ''].filter(Boolean).join('. ');
+    return '<li class="bout' + (f.id === campId ? ' is-camp' : '') + '">' +
+      '<div class="bout-when">' + (f.slot ? esc(slotLabel(f.slot)) : 'No slot') + '</div>' +
+      '<div class="bout-main"><span class="bout-title">' + esc(f.title) + '</span>' +
+        (f.belt ? ' <span class="chip chip-belt">Title fight</span>' : '') +
+        (late ? ' <span class="chip chip-late">Overdue</span>' : '') +
+        (sub ? '<div class="bout-sub">' + esc(sub) + '</div>' : '') +
+      '</div>' +
+      '<div class="bout-ctl">' +
+        '<div class="bout-stat' + (hasNum(f.odds) ? '' : ' is-empty') + '"><b>' + (hasNum(f.odds) ? f.odds + '%' : '?') + '</b><small>your odds</small></div>' +
+        '<span class="seg" role="group" aria-label="Simulate the result of ' + esc(f.title) + '">' +
+          '<button type="button" class="seg-w" aria-pressed="' + (res === 'win') + '" data-act="sim" data-id="' + esc(f.id) + '" data-res="win" data-key="simw-' + esc(f.id) + '" title="Simulate a win">W</button>' +
+          '<button type="button" class="seg-l" aria-pressed="' + (res === 'loss') + '" data-act="sim" data-id="' + esc(f.id) + '" data-res="loss" data-key="siml-' + esc(f.id) + '" title="Simulate a loss">L</button>' +
+        '</span>' +
+        '<div class="bout-stat"><b>' + esc(it.row.rec) + '</b><small>record then</small></div>' +
+      '</div>' +
+      '<div class="bout-btn"><button class="btn btn-ghost btn-small" type="button" data-act="camp" data-id="' + esc(f.id) + '" data-key="camp-' + esc(f.id) + '">' + (f.id === campId ? 'In camp' : 'Open camp') + '</button></div>' +
+    '</li>';
+  }).join('');
+  return '<section class="block" aria-labelledby="sched-h">' +
+    '<div class="block-head"><h2 class="section-title" id="sched-h">Schedule to 2029</h2>' +
+    '<p class="muted">Flip W and L to simulate. Nothing is scored until you record a result.</p></div>' +
+    '<ol class="bouts">' + rows + '</ol></section>';
+}
+
+/* ---------- record ---------- */
+function reviewHtml(f){
+  var note = [f.method, f.notes].filter(Boolean).join('. ').replace(/\.\.+/g, '.');
+  return '<div class="review">' +
+    (note ? '<p class="review-note">' + esc(note) + '</p>' : '') +
+    voicesHtml(tapeVoices(f), state.tapeVoice, 'tape', f) +
+    '<div class="camp-btns"><button class="btn" type="button" data-act="edit" data-id="' + esc(f.id) + '" data-key="tapeedit-' + esc(f.id) + '">Edit this fight</button></div>' +
+  '</div>';
+}
+function recordHtml(m){
+  if (!m.done.length){
+    return '<section class="block" aria-labelledby="rec-h"><h2 class="section-title" id="rec-h">Record</h2>' +
+      '<div class="notice"><p>No fights on the record yet. Add a fight you have already had, or record a result from camp.</p></div></section>';
+  }
+  var s = recordStats(m);
+  var stats = '<dl class="stats">' +
+    '<div><dt>Next fight after a loss</dt><dd>' + esc(s.afterLoss || 'None') + '</dd></div>' +
+    '<div><dt>Longest win streak</dt><dd>' + s.longest + '</dd></div>' +
+    '<div><dt>Current streak</dt><dd>' + esc(s.streak || 'None') + '</dd></div>' +
+    '<div><dt>Good bets</dt><dd>' + (s.judged ? s.goodBets + ' of ' + s.judged : 'None') + '</dd></div>' +
+    '<div><dt>Tapes reviewed</dt><dd>' + s.reviewed + ' of ' + m.done.length + '</dd></div>' +
+    '<div><dt>In the cookie jar</dt><dd>' + s.jar + '</dd></div>' +
+  '</dl>';
+  var rows = m.doneRows.slice().reverse().map(function(r){
+    var f = r.f, open = state.openId === f.id;
+    var resCell = f.result
+      ? '<td class="c-res res-' + f.result + '">' + RESULT_LABEL[f.result] + '</td>'
+      : '<td class="c-res"><button class="btn btn-ghost btn-small" type="button" data-act="edit" data-id="' + esc(f.id) + '" data-focus="f-result" data-key="score-' + esc(f.id) + '">Score</button></td>';
+    var when = dateLabel(f.date), ago = agoLabel(f.date), bet = betLabel(f);
+    var row = '<tr>' + resCell +
+      '<td class="c-rec">' + esc(r.rec) + '</td>' +
+      '<td class="c-fight"><button type="button" class="row-toggle" aria-expanded="' + (open ? 'true' : 'false') + '" data-act="toggle-row" data-id="' + esc(f.id) + '" data-key="row-' + esc(f.id) + '">' +
+          '<span class="caret" aria-hidden="true"></span><span class="t">' + esc(f.title) + '</span></button>' +
+        (f.belt ? ' <span class="chip chip-belt">Title fight</span>' : '') +
+        (f.jar ? ' <span class="chip chip-jar">Cookie jar</span>' : '') +
+        (f.method ? '<div class="fight-sub narrow-only">' + esc(f.method) + '</div>' : '') +
+        (bet ? '<div class="fight-sub narrow-only">' + esc(bet) + '</div>' : '') +
+      '</td>' +
+      '<td class="col-opt">' + esc(f.method || '') + '</td>' +
+      '<td class="c-when">' + (when ? esc(when) + '<div class="fight-sub">' + esc(ago) + '</div>' : '<span class="muted">No date</span>') + '</td>' +
+      '<td class="col-opt">' + (bet ? esc(bet) : '<span class="muted">' + (isReviewed(f) ? 'Not judged' : 'Tape not reviewed') + '</span>') + '</td>' +
+    '</tr>';
+    if (open) row += '<tr class="tape-row"><td colspan="6">' + reviewHtml(f) + '</td></tr>';
+    return row;
+  }).join('');
+  return '<section class="block" aria-labelledby="rec-h">' +
+    '<div class="block-head"><h2 class="section-title" id="rec-h">Record</h2><p class="muted">Most recent first. Open a fight to review the tape or edit it.</p></div>' +
+    stats +
+    '<div class="scroll"><table class="rec">' +
+      '<thead><tr><th>Res.</th><th>Record</th><th>Fight</th><th class="col-opt">Method</th><th>Date</th><th class="col-opt">The bet</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table></div></section>';
+}
+
+function render(){
+  var active = document.activeElement;
+  var key = active && active.getAttribute ? active.getAttribute('data-key') : null;
+  var html = '';
+  if (state.noDb){
+    html = '<div class="notice notice-warn"><p><strong>This view cannot load or save the record.</strong> Open the page from your Claude account to see and change it.</p></div>';
+  } else if (!state.loaded){
+    html = '<div class="notice"><p>' + (state.slow ? 'Your saved record cannot be reached yet. It will appear here when the connection returns.' : 'Loading your record') + '</p></div>';
+  } else {
+    if (state.loadError) html += '<div class="notice notice-warn"><p>' + esc(state.loadError) + '</p></div>';
+    else if (state.slow) html += '<div class="notice"><p>This copy may be out of date. It will refresh when the connection returns.</p></div>';
+    if (!state.fights.length){
+      html += '<div class="notice"><h2 class="section-title">No fights yet</h2><p class="muted">Add your first fight to start the record.</p></div>';
+    } else {
+      var m = model();
+      html += tapeHtml(m) + campHtml(m) + scheduleHtml(m) + recordHtml(m);
+    }
+  }
+  app.innerHTML = html;
+  if (key && key !== 'add'){
+    var again = app.querySelector('[data-key="' + key.replace(/"/g, '') + '"]');
+    if (again){
+      again.focus({preventScroll: true});
+      if ((key === 'new-action' || key === 'goal-input') && again.setSelectionRange){ var n = again.value.length; again.setSelectionRange(n, n); }
+    }
+  }
+}
+
+/* ---------- dialog ---------- */
+function fillSelects(f){
+  var slotSel = el('f-slot'), slots = allSlots();
+  if (f && f.slot && slots.indexOf(f.slot) < 0) slots.unshift(f.slot);
+  slotSel.innerHTML = slots.map(function(s){ return '<option value="' + esc(s) + '">' + esc(slotLabel(s)) + '</option>'; }).join('');
+  el('f-month').innerHTML = '<option value="">Month not set</option>' + MONTHS.map(function(mn, i){ return '<option value="' + (i + 1) + '">' + mn + '</option>'; }).join('');
+}
+function syncGroups(){
+  var done = el('f-status-done').checked;
+  var nodes = dlg.querySelectorAll('[data-when]');
+  for (var i = 0; i < nodes.length; i++){
+    var w = nodes[i].getAttribute('data-when');
+    nodes[i].hidden = (w === 'up' && done) || (w === 'done' && !done);
+  }
+  el('l-notcontrol').textContent = done ? 'What was outside my control' : 'Not in my control';
+  el('l-odds').textContent = done ? 'Odds of a win you gave it, %' : 'Odds of a win, %';
+}
+function txt(id, v){ el(id).value = v || ''; }
+function openDialog(f, preset, focusId){
+  editing = f || null;
+  deleteArmed = false;
+  preset = preset || {};
+  fillSelects(f);
+  var status = preset.status || (f && f.status) || 'upcoming';
+  var recording = !!f && preset.status === 'done' && f.status !== 'done';
+  el('dlg-title').textContent = f ? (recording ? 'Record the result' : 'Edit fight') : 'Add a fight';
+  txt('f-title', f && f.title);
+  el('f-title-err').hidden = true;
+  txt('f-opponent', f && f.opponent);
+  el('f-status-up').checked = status !== 'done';
+  el('f-status-done').checked = status === 'done';
+  var slot = preset.slot || (f && f.slot) || '';
+  if (slot) el('f-slot').value = slot;
+  el('f-belt').checked = !!(f && f.belt);
+  el('f-result').value = f && f.result ? f.result : '';
+  txt('f-method', f && f.method);
+  var d = new Date(), y = '', mo = '';
+  if (f && f.date){ var p = f.date.split('-'); y = p[0]; mo = p[1] ? String(Number(p[1])) : ''; }
+  else if (status === 'done' && (!f || f.status !== 'done')){ y = String(d.getFullYear()); mo = String(d.getMonth() + 1); }
+  el('f-year').value = y; el('f-month').value = mo;
+  txt('f-notes', f && f.notes);
+  el('f-odds').value = f && hasNum(f.odds) ? f.odds : '';
+  txt('f-money', f && f.costMoney);
+  el('f-months').value = f && hasNum(f.costMonths) ? f.costMonths : '';
+  el('f-survivable').value = f && f.survivable === true ? 'yes' : f && f.survivable === false ? 'no' : '';
+  txt('f-premortem', f && f.premortem);
+  el('f-bet').value = f && (f.bet === 'good' || f.bet === 'bad') ? f.bet : '';
+  txt('f-incontrol', f && f.inControl);
+  txt('f-notcontrol', f && f.notControl);
+  txt('f-serves', f && f.serves);
+  txt('f-stoprule', f && f.stopRule);
+  txt('f-lesson', f && f.lesson);
+  txt('f-mirror', f && f.mirror);
+  el('f-jar').checked = !!(f && f.jar);
+  txt('f-proves', f && f.proves);
+  txt('f-losspays', f && f.lossPays);
+  txt('f-rematch', f && f.rematch);
+  txt('f-own', f && f.own);
+  txt('f-good', f && f.good);
+  var del = el('dlg-delete');
+  del.hidden = !f; del.textContent = 'Delete fight';
+  syncGroups();
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+  var target = focusId && el(focusId) ? el(focusId) : (recording ? el('f-result') : el('f-title'));
+  if (target.closest('[hidden]')) target = el('f-title');
+  dlg.scrollTop = 0;
+  target.focus();
+  if (target !== el('f-title') && target.scrollIntoView) target.scrollIntoView({block: 'center'});
+}
+function closeDialog(){ if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); editing = null; }
+
+function val(id){ return el(id).value.trim(); }
+function numOrNull(id, lo, hi){
+  var raw = val(id);
+  if (raw === '' || isNaN(Number(raw))) return null;
+  return Math.max(lo, Math.min(hi, Number(raw)));
+}
+function saveDialog(){
+  var title = val('f-title');
+  if (!title){ el('f-title-err').hidden = false; dlg.scrollTop = 0; el('f-title').focus(); return; }
+  var f = editing;
+  var status = el('f-status-done').checked ? 'done' : 'upcoming';
+  var surv = el('f-survivable').value;
+  var data = {};
+  if (f){ for (var k in f) if (k !== 'id') data[k] = f[k]; }
+  data.title = title;
+  data.opponent = val('f-opponent');
+  data.status = status;
+  data.belt = el('f-belt').checked;
+  data.notes = val('f-notes');
+  data.odds = numOrNull('f-odds', 0, 100);
+  data.costMoney = val('f-money');
+  data.costMonths = numOrNull('f-months', 0, 600);
+  data.survivable = surv === 'yes' ? true : surv === 'no' ? false : null;
+  data.premortem = val('f-premortem');
+  data.bet = el('f-bet').value || null;
+  data.inControl = val('f-incontrol');
+  data.notControl = val('f-notcontrol');
+  data.serves = val('f-serves');
+  data.stopRule = val('f-stoprule');
+  data.lesson = val('f-lesson');
+  data.mirror = val('f-mirror');
+  data.jar = el('f-jar').checked;
+  data.proves = val('f-proves');
+  data.lossPays = val('f-losspays');
+  data.rematch = val('f-rematch');
+  data.own = val('f-own');
+  data.good = val('f-good');
+  data.actions = f ? cleanActions(f) : [];
+  data.sim = f && f.sim ? f.sim : null;
+  if (status === 'done'){
+    var y = parseInt(el('f-year').value, 10), mo = parseInt(el('f-month').value, 10);
+    data.result = el('f-result').value || null;
+    data.method = val('f-method');
+    data.date = y ? (mo ? y + '-' + pad(mo) : String(y)) : '';
+    data.slot = f && f.slot ? f.slot : null;
+    if (data.date) data.sort = dateSort(data.date);
+    else if (f && f.status === 'done' && hasNum(f.sort)) data.sort = f.sort;
+    else { var d = new Date(); data.sort = d.getFullYear() + (d.getMonth() + 0.5) / 12; }
+  } else {
+    data.slot = el('f-slot').value || allSlots()[0];
+    data.sort = slotSort(data.slot);
+    data.result = null;
+    data.method = f && f.method ? f.method : '';
+    data.date = '';
+  }
+  var id = f ? f.id : newId();
+  if (f && state.campId === id && status === 'done'){ state.campId = null; state.campVoice = null; }
+  write(id, function(){ return refOf(id).set(data); });
+  closeDialog();
+}
+
+/* ---------- events ---------- */
+function setActions(f, actions){
+  write(f.id, function(){ return refOf(f.id).update({actions: actions}); });
+}
+document.addEventListener('click', function(e){
+  var t = e.target.closest ? e.target.closest('[data-act]') : null;
+  if (!t || t.type === 'checkbox') return;
+  var act = t.getAttribute('data-act'), id = t.getAttribute('data-id');
+  var f = id ? findFight(id) : null;
+  if (act === 'add'){
+    var m = model(), taken = {};
+    m.up.forEach(function(x){ if (x.slot) taken[x.slot] = true; });
+    var free = allSlots().filter(function(s){ return !taken[s]; })[0];
+    openDialog(null, {status: 'upcoming', slot: free});
+  }
+  else if (act === 'book') openDialog(null, {status: 'upcoming', slot: t.getAttribute('data-slot')});
+  else if (act === 'edit' && f) openDialog(f, null, t.getAttribute('data-focus'));
+  else if (act === 'result' && f) openDialog(f, {status: 'done'});
+  else if (act === 'voice'){
+    var idx = Number(t.getAttribute('data-i'));
+    if (t.getAttribute('data-ctx') === 'camp') state.campVoice = idx; else state.tapeVoice = idx;
+    render();
+  }
+  else if (act === 'toggle-row' && f){ state.openId = state.openId === f.id ? null : f.id; state.tapeVoice = null; render(); }
+  else if (act === 'camp' && f){
+    state.campId = f.id; state.campVoice = null; state.draft = ''; render();
+    var c = document.getElementById('camp');
+    var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (c && c.scrollIntoView) c.scrollIntoView({behavior: calm ? 'auto' : 'smooth', block: 'start'});
+  }
+  else if (act === 'camp-next'){ state.campId = null; state.campVoice = null; state.draft = ''; render(); }
+  else if (act === 'sim' && f){
+    var res = t.getAttribute('data-res');
+    if ((f.sim === 'loss' ? 'loss' : 'win') !== res) write(f.id, function(){ return refOf(f.id).update({sim: res}); });
+  }
+  else if (act === 'del-action' && f){
+    var aid = t.getAttribute('data-aid');
+    setActions(f, cleanActions(f).filter(function(a){ return a.id !== aid; }));
+  }
+  else if (act === 'first' && f){
+    var fid = t.getAttribute('data-aid');
+    setActions(f, cleanActions(f).map(function(a){ a.first = a.id === fid ? !a.first : false; return a; }));
+  }
+  else if (act === 'goal-edit'){ state.goalEdit = true; state.goalDraft = state.goal; render(); var gi = el('goal-input'); if (gi) gi.focus(); }
+  else if (act === 'goal-cancel'){ state.goalEdit = false; render(); }
+});
+document.addEventListener('change', function(e){
+  var t = e.target;
+  if (t && t.getAttribute && t.getAttribute('data-act') === 'toggle'){
+    var f = findFight(t.getAttribute('data-id')), aid = t.getAttribute('data-aid');
+    if (!f) return;
+    setActions(f, cleanActions(f).map(function(a){ if (a.id === aid) a.done = t.checked; return a; }));
+  }
+  if (t && t.name === 'f-status') syncGroups();
+});
+document.addEventListener('input', function(e){
+  if (e.target && e.target.id === 'new-action') state.draft = e.target.value;
+  if (e.target && e.target.id === 'goal-input') state.goalDraft = e.target.value;
+});
+document.addEventListener('submit', function(e){
+  e.preventDefault();
+  var form = e.target;
+  if (form.id === 'dlg-form'){ saveDialog(); return; }
+  var kind = form.getAttribute('data-form');
+  if (kind === 'add-action'){
+    var f = findFight(form.getAttribute('data-id'));
+    var text = state.draft.trim();
+    if (!f || !text) return;
+    state.draft = '';
+    var next = cleanActions(f);
+    next.push({id: newId(), text: text, done: false, first: false});
+    setActions(f, next);
+    render();
+  }
+  if (kind === 'goal'){
+    var goal = state.goalDraft.trim();
+    state.goalEdit = false; state.goal = goal;
+    write('meta', function(){ return db.doc('meta/main').set({topGoal: goal}); });
+    render();
+  }
+});
+el('dlg-cancel').addEventListener('click', closeDialog);
+el('dlg-delete').addEventListener('click', function(){
+  if (!editing) return;
+  if (!deleteArmed){ deleteArmed = true; this.textContent = 'Delete for good?'; return; }
+  var id = editing.id;
+  if (state.campId === id){ state.campId = null; state.campVoice = null; }
+  if (state.openId === id) state.openId = null;
+  write(id, function(){ return refOf(id).delete(); });
+  closeDialog();
+});
+dlg.addEventListener('click', function(e){ if (e.target === dlg) closeDialog(); });
+
+/* ---------- boot ---------- */
+function boot(){
+  render();
+  if (!window.claude || typeof window.claude.use !== 'function'){ state.noDb = true; render(); return; }
+  window.claude.use('db').then(function(d){ return d; }, function(){ return null; }).then(function(d){
+    db = d;
+    if (!db){ state.noDb = true; render(); return; }
+    var timer = setTimeout(function(){ state.slow = true; render(); }, 10000);
+    db.collection('fights').onSnapshot(function(snap){
+      state.fights = snap.docs.map(function(doc){
+        var out = {id: doc.id}, body = doc.data() || {};
+        for (var k in body) out[k] = body[k];
+        return out;
+      });
+      state.loaded = true;
+      if (!snap.metadata || !snap.metadata.fromCache){ clearTimeout(timer); state.slow = false; }
+      render();
+    }, function(){
+      clearTimeout(timer);
+      state.loaded = true; state.slow = false;
+      state.loadError = 'The saved record stopped loading. Reopen the page to try again.';
+      render();
+    });
+    db.doc('meta/main').onSnapshot(function(snap){
+      var body = snap.exists ? (snap.data() || {}) : {};
+      var goal = typeof body.topGoal === 'string' ? body.topGoal : '';
+      if (goal !== state.goal){ state.goal = goal; if (!state.goalEdit) render(); }
+    }, function(){});
+  });
+}
+boot();
+})();
+</script>
+</body>
+</html>
