@@ -383,10 +383,20 @@ textarea{min-height:64px;resize:vertical}
 @media (prefers-reduced-motion: reduce){
   *{scroll-behavior:auto !important;transition:none !important}
 }
+
+/* Tab bar: switches between the fight record and the Driver OT sign-off tracker (light page in a shadow root). */
+.tabs{position:sticky;top:0;z-index:40;display:flex;gap:6px;padding:10px 22px;background:rgba(7,9,14,0.92);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+.tabs .tab{font-family:var(--font-body);font-size:15px;font-weight:600;padding:7px 14px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted)}
+.tabs .tab:hover{color:var(--ink)}
+.tabs .tab[aria-selected="true"]{background:var(--raised);border-color:var(--line);color:var(--ink)}
 </style>
 </head>
 <body>
-<div class="page">
+<nav class="tabs" role="tablist" aria-label="Pages">
+  <button class="tab" type="button" role="tab" id="tab-fight" aria-controls="fr-tab" aria-selected="true">Fight record</button>
+  <button class="tab" type="button" role="tab" id="tab-driving" aria-controls="driver-ot" aria-selected="false">Driver OT</button>
+</nav>
+<div class="page" id="fr-tab" role="tabpanel" aria-labelledby="tab-fight">
   <header class="top">
     <div>
       <h1>Liam Fagan</h1>
@@ -1505,6 +1515,461 @@ function boot(){
   });
 }
 boot();
+})();
+</script>
+<div id="driver-ot" role="tabpanel" aria-labelledby="tab-driving" hidden></div>
+<template id="driver-ot-tpl">
+<style>
+:host{
+  --bg:#F6F5F1;
+  --panel:#FFFFFF;
+  --ink:#1C2230;
+  --muted:#5E6677;
+  --line:#E2E0D9;
+  --accent:#2E6BE6;
+  --accent-soft:rgba(46,107,230,0.10);
+  --good:#1E9E62;
+  --good-soft:rgba(30,158,98,0.12);
+  --warn:#C9821A;
+  --warn-soft:rgba(201,130,26,0.14);
+  --bad:#D2483A;
+  --bad-soft:rgba(210,72,58,0.12);
+  --radius:12px;
+  --font:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+:host{display:block;color-scheme:light;background:var(--bg);color:var(--ink);font:15px/1.5 var(--font);min-height:100vh;text-align:left;letter-spacing:normal;font-variant-numeric:normal}
+main{max-width:1000px;margin:0 auto;padding:28px 18px 80px}
+h1{font-size:28px;line-height:1.2;margin:4px 0 6px}
+h2{font-size:19px;margin:0 0 4px}
+.kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.lead{color:var(--muted);margin:0 0 14px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-top:18px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:18px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.stat .num{font-size:26px;font-weight:700;line-height:1.1}
+.stat .lbl{font-size:13px;color:var(--muted)}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:8px}
+.bar>span{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .25s}
+.bar.good>span{background:var(--good)}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+ul.req{margin:8px 0 0;padding-left:20px}
+ul.req li{margin:3px 0}
+.checklist{list-style:none;margin:10px 0 0;padding:0}
+.checklist li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line)}
+.checklist li:first-child{border-top:0}
+.checklist input{width:18px;height:18px;margin-top:2px;accent-color:var(--good);flex:none}
+.checklist li.done span{color:var(--muted);text-decoration:line-through}
+.drills{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin-top:12px}
+.drill{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.drill.complete{border-color:var(--good);background:var(--good-soft)}
+.drill .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.drill .name{font-weight:650}
+.drill .count{font-weight:700;font-variant-numeric:tabular-nums}
+.drill .meta{font-size:13px;color:var(--muted)}
+.drill details{font-size:13px;color:var(--muted)}
+.drill summary{cursor:pointer;color:var(--accent);font-weight:600}
+.drill details p{margin:6px 0 0}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+button{font:inherit;font-size:14px;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.clean{background:var(--good);border-color:var(--good);color:#fff}
+button.miss{color:var(--bad)}
+button.small{font-size:13px;padding:5px 10px}
+form.logform{display:grid;grid-template-columns:2fr 1.2fr .8fr 2fr auto;gap:8px;align-items:end;margin-top:12px}
+form.logform label{font-size:12px;color:var(--muted);font-weight:600;display:flex;flex-direction:column;gap:3px}
+input[type=text],input[type=number],select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);width:100%}
+.cleanrow{display:flex;gap:6px}
+@media (max-width:760px){form.logform{grid-template-columns:1fr 1fr}form.logform .wide{grid-column:1 / -1}}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}
+th,td{text-align:left;padding:8px 8px;border-top:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-top:0}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.now td{background:var(--accent-soft)}
+.mockrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.svgwrap{overflow-x:auto;margin-top:8px}
+.log{max-height:340px;overflow-y:auto}
+.foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.note{font-size:13px;color:var(--muted);margin-top:8px}
+ol.rules{margin:8px 0 0;padding-left:22px}
+ol.rules li{margin:4px 0}
+.toast{position:fixed;z-index:50;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:99px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:.95}
+</style>
+<main>
+  <div class="kicker">Estus Health · Driving on the Spectrum</div>
+  <h1>Driver OT Sign-off: Rule of 100</h1>
+  <p class="lead">One supervised assessment and report gets the Driver OT number. Target: report in by 27 Feb 2027, ahead of the March deadline.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">of 1,200 clean-standard reps</div><div class="bar"><span id="barTotal"></span></div></div>
+    <div class="stat"><div class="num" id="statPace">0</div><div class="lbl" id="statPaceLbl">reps expected by today</div><div id="paceTag" style="margin-top:6px"></div></div>
+    <div class="stat"><div class="num" id="statWeek">0</div><div class="lbl">reps this week (target 120)</div><div class="bar"><span id="barWeek"></span></div></div>
+    <div class="stat"><div class="num" id="statDays">0</div><div class="lbl">days until the report is due</div></div>
+  </div>
+
+  <section>
+    <h2>What Flinders needs</h2>
+    <ul class="req">
+      <li>One OT driver assessment and report, under supervision</li>
+      <li>Supervisor is a Driver OT with at least 12 months practice</li>
+      <li>In a driving instructor's dual-control car: MDI in front, you in the back as the OT</li>
+      <li>Show the MDI communication: brief before the drive, feedback after</li>
+      <li>A more complex case: a real client with a medical condition, not family or staff</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Fix now</h2>
+    <p class="lead">Clear the MDI wording everywhere before anything else.</p>
+    <ul class="checklist" id="fixList"></ul>
+  </section>
+
+  <section>
+    <h2>Rep tracker</h2>
+    <p class="lead">A drill is done at 100 reps with the last 10 clean in a row. Quick buttons log a rep now; the form adds partner, time and one fix.</p>
+    <form class="logform" id="logForm">
+      <label class="wide">Drill<select id="fDrill"></select></label>
+      <label>Partner<input type="text" id="fPartner" placeholder="eg Nam"></label>
+      <label>Minutes<input type="number" id="fMins" min="0" step="1" placeholder="5"></label>
+      <label class="wide">One fix<input type="text" id="fFix" placeholder="What to tighten next rep"></label>
+      <div class="cleanrow wide">
+        <button type="submit" class="clean" data-clean="1">Log clean</button>
+        <button type="submit" class="miss" data-clean="0">Log miss</button>
+      </div>
+    </form>
+    <div class="drills" id="drills"></div>
+    <div class="mockrow">
+      <div><strong>Full mocks: <span id="mockCount">0</span> / 10</strong><div class="note" style="margin:0">A mock adds one rep to every drill. It does not change clean streaks.</div></div>
+      <button class="primary" id="mockBtn">Log a full mock</button>
+      <button class="small" id="mockUndo">Undo last mock</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Weekly rhythm</h2>
+    <p class="lead">About 120 reps a week, built around clinical days.</p>
+    <table>
+      <thead><tr><th>Day</th><th>Block</th><th>Reps</th></tr></thead>
+      <tbody>
+        <tr><td>Mon to Thu</td><td>20 min before first client: 3 to 4 quick test drills (TMT, maze, vision, muscle testing) on a team member</td><td class="num">15 a day</td></tr>
+        <tr><td>Mon to Thu</td><td>15 min after last client: notes-to-report paragraph, consent script and road law screen out loud</td><td class="num">10 a day</td></tr>
+        <tr><td>Fri</td><td>90 min: one full mock, one clinical interview, one MDI brief and debrief role play</td><td class="num">20</td></tr>
+        <tr><td>Sun</td><td>5 min: check the log, pick next week's weakest drill</td><td class="num">0</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Timeline</h2>
+    <p class="lead">Reps run until 13 Feb, the assessment lands mid February, and the report goes in 27 Feb.</p>
+    <div class="svgwrap" id="timeline"></div>
+    <table>
+      <thead><tr><th>Phase</th><th>Dates</th><th>Focus</th><th>Reps by end</th></tr></thead>
+      <tbody id="phaseRows"></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Assessment day checklist</h2>
+    <ul class="checklist" id="dayList"></ul>
+  </section>
+
+  <section>
+    <h2>Rule of 100</h2>
+    <ol class="rules">
+      <li>A rep counts only if it is clean: standard instructions word for word, correct timing and scoring, no cueing, notes taken live.</li>
+      <li>The last 10 reps of each drill must be clean in a row. Break the streak, keep going.</li>
+      <li>Log every rep: date, partner, time taken, clean yes/no, one fix.</li>
+      <li>Micro reps count. One TMT on a staff member in 5 minutes is one rep.</li>
+      <li>Notes and kit setup ride along on every rep, so they stack up on their own.</li>
+      <li>Practice partners (team, family, friends) are for reps only. Never write a report on them.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Rep log</h2>
+    <div class="log"><table><thead><tr><th>When</th><th>Drill</th><th>Result</th><th>Partner</th><th>Min</th><th>Fix</th></tr></thead><tbody id="logRows"></tbody></table></div>
+    <div class="foot">
+      <button id="exportBtn">Export log</button>
+      <button id="importBtn">Import log</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      <button id="resetBtn" class="miss">Reset everything</button>
+    </div>
+    <p class="note">Saved in this browser only. Export to back it up or move it to another device.</p>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+</template>
+<script>
+(function(){
+  var host = document.getElementById('driver-ot');
+  if (!host || !host.attachShadow) return;
+  var root = host.attachShadow({mode:'open'});
+  root.appendChild(document.getElementById('driver-ot-tpl').content.cloneNode(true));
+  var KEY = 'driving-rule-of-100-v1';
+  var DUE = '2027-02-27';
+
+  var DRILLS = [
+    {id:'kit', name:'Kit setup', clean:'All gear laid out before the client sits down, nothing fetched mid-assessment.', why:'Feedback: have equipment ready at the start.'},
+    {id:'notes', name:'Live notes', clean:'Notes written during the rep, then one report paragraph written from those notes only, no AI first pass.', why:'Feedback: note-taking was thin in pre-drive and on-road.'},
+    {id:'tmt', name:'Trail Making A and B', clean:'Standard script word for word, timed, errors corrected per the manual, zero answers given.', why:'Feedback: TMT-B was compromised by giving answers.'},
+    {id:'maze', name:'Maze test', clean:'Standard admin, timing and scoring.', why:'Feedback: less familiar component.'},
+    {id:'mmt', name:'Muscle testing and ROM', clean:'Upper and lower limb, graded and recorded, under 5 minutes.', why:'Feedback: less familiar component.'},
+    {id:'vision', name:'Vision', clean:'Acuity and confrontation fields, recorded against AFTD standards.', why:'Competency 2.10.'},
+    {id:'interview', name:'Clinical interview', clean:'Full occupational profile: driving history, needs and goals, medical, meds, substances. Rotate case scenarios.', why:'Feedback: interview needs more depth.'},
+    {id:'roadlaw', name:'Road law screen', clean:'Administered and scored, gaps noted.', why:'Competency 2.15.'},
+    {id:'consent', name:'Consent and legal script', clean:'Reason for referral, procedure, consent, licence check, legislation and insurance, under 4 minutes.', why:'Competencies 2.1 to 2.4 and 3.1.'},
+    {id:'anxiety', name:'Anxiety pre/post', clean:'Self-report scale before and after, plus a 0 to 10 rating, both written in the notes.', why:'Feedback: anxiety was not objectively measured.'},
+    {id:'mdi', name:'MDI brief and debrief', clean:'2 minute brief (client, concerns, route, one behaviour to instruct, when to use the dual brake), then a debrief. Includes an instruct-and-observe plan: eg MDI teaches following distance, you count seconds before and after.', why:'Feedback: practise MDI communication and test following distance properly.'},
+    {id:'feedback', name:'Feedback to client', clean:'Off-road results explained in plain words, straight after.', why:'Competency 2.17.'}
+  ];
+
+  var FIX = [
+    'Amend report 2: remove the MDI/instructor claim, issue the amended copy',
+    'Fix both report builders: assessor section shows OT credentials only, plus a separate "Instructor on the day" field with MDI name and licence number',
+    'Check the service page, website and any ads for wording that implies you are an instructor',
+    'Book the supervisor: Driver OT with 12+ months practice, date in mid February',
+    'Lock the MDI and dual-control car',
+    'Line up the client: real referral, medical condition that affects driving, consented',
+    'Book the call with the course lecturer on managing driving anxiety, and ask which anxiety scale they want to see',
+    'Ask the supervisor if you can observe two assessments first (one return to driving, one learner)'
+  ];
+
+  var DAY = [
+    'Kit laid out and checked before the client arrives',
+    'Consent, licence check, legislation and insurance covered',
+    'Anxiety scale done before the drive',
+    'MDI briefed: client, concerns, route, behaviour to instruct, dual-control triggers',
+    'You sit in the back. MDI in front, in their dual-control car',
+    'Live notes the whole drive',
+    'Instruct-and-observe: MDI teaches the target behaviour, you record before and after',
+    'Anxiety scale repeated after the drive',
+    'Debrief with the MDI, then feedback to the client',
+    'Report written from your notes, assessor section shows OT only, MDI named with licence number',
+    'Supervisor reviews the draft, then submit'
+  ];
+
+  var PHASES = [
+    {name:'Fix-ups and setup', start:'2026-11-24', end:'2026-11-30', focus:'Everything in Fix now, build kit and log, 5 baseline reps per drill', reps:60},
+    {name:'Volume 1', start:'2026-12-01', end:'2026-12-21', focus:'All 12 drills, tests first', reps:420},
+    {name:'Christmas', start:'2026-12-22', end:'2027-01-04', focus:'Light: quick test drills only, about 60 a week', reps:540},
+    {name:'Volume 2', start:'2027-01-05', end:'2027-01-25', focus:'Weakest drills first, chase clean streaks', reps:900},
+    {name:'Integration', start:'2027-01-26', end:'2027-02-13', focus:'10 full mocks, observe with the supervisor, dress rehearsal with the MDI', reps:1200},
+    {name:'Supervised assessment', start:'2027-02-16', end:'2027-02-20', focus:'With the supervisor, in the MDI\'s dual-control car', reps:null},
+    {name:'Report submitted', start:'2027-02-27', end:'2027-02-27', focus:'Written from notes, supervisor reviews, then submit', reps:null}
+  ];
+
+  var PACE = [['2026-11-24',0],['2026-11-30',60],['2026-12-21',420],['2027-01-04',540],['2027-01-25',900],['2027-02-13',1200]];
+
+  function empty(){ return {log:[], fix:{}, day:{}}; }
+  var state = empty();
+  try { var raw = localStorage.getItem(KEY); if (raw) state = Object.assign(empty(), JSON.parse(raw)); } catch(e){}
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
+
+  var $ = function(id){ return root.getElementById(id); };
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function dayNum(iso){ var p = iso.split('-'); return Date.UTC(+p[0], +p[1]-1, +p[2]) / 864e5; }
+  function todayIso(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function fmt(iso){ var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return m[+iso.slice(5,7)-1] + ' ' + (+iso.slice(8,10)); }
+  function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(function(){ t.classList.remove('show'); }, 1600); }
+
+  function drillStats(id){
+    var count = 0, streak = 0, entries = [];
+    state.log.forEach(function(e){ if (e.mock) count++; else if (e.drill === id){ count++; entries.push(e); } });
+    for (var i = entries.length - 1; i >= 0; i--){ if (entries[i].clean) streak++; else break; }
+    return {count:count, streak:streak};
+  }
+  function totalReps(){ var n = 0; state.log.forEach(function(e){ n += e.mock ? DRILLS.length : 1; }); return n; }
+  function mockCount(){ return state.log.filter(function(e){ return e.mock; }).length; }
+  function expectedBy(iso){
+    var t = dayNum(iso);
+    if (t <= dayNum(PACE[0][0])) return 0;
+    for (var i = 1; i < PACE.length; i++){
+      var a = PACE[i-1], b = PACE[i], ta = dayNum(a[0]), tb = dayNum(b[0]);
+      if (t <= tb) return Math.round(a[1] + (b[1]-a[1]) * (t-ta) / (tb-ta));
+    }
+    return 1200;
+  }
+  function weekReps(){
+    var now = new Date(); var dow = (now.getDay() + 6) % 7;
+    var start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow).getTime();
+    var n = 0; state.log.forEach(function(e){ if (e.t >= start) n += e.mock ? DRILLS.length : 1; }); return n;
+  }
+
+  function renderChecklist(elId, items, bucket){
+    $(elId).innerHTML = items.map(function(txt, i){
+      var on = !!state[bucket][i];
+      return '<li class="' + (on ? 'done' : '') + '"><input type="checkbox" data-b="' + bucket + '" data-i="' + i + '"' + (on ? ' checked' : '') + ' id="' + bucket + i + '"><label for="' + bucket + i + '"><span>' + esc(txt) + '</span></label></li>';
+    }).join('');
+  }
+
+  function renderDrills(){
+    $('drills').innerHTML = DRILLS.map(function(d){
+      var s = drillStats(d.id), done = s.count >= 100 && s.streak >= 10;
+      var pct = Math.min(100, s.count);
+      return '<div class="drill' + (done ? ' complete' : '') + '">' +
+        '<div class="top"><span class="name">' + esc(d.name) + '</span><span class="count">' + s.count + ' / 100</span></div>' +
+        '<div class="bar' + (done ? ' good' : '') + '"><span style="width:' + pct + '%"></span></div>' +
+        '<div class="meta">Clean streak: <strong>' + s.streak + '</strong> / 10' + (done ? ' · <span class="pill good">Done</span>' : '') + '</div>' +
+        '<details><summary>Clean rep looks like</summary><p>' + esc(d.clean) + '</p><p><em>' + esc(d.why) + '</em></p></details>' +
+        '<div class="btns"><button class="clean small" data-act="clean" data-id="' + d.id + '">+ Clean</button><button class="miss small" data-act="miss" data-id="' + d.id + '">+ Miss</button><button class="small" data-act="undo" data-id="' + d.id + '">Undo</button></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderStats(){
+    var total = totalReps(), t = todayIso(), exp = expectedBy(t), wk = weekReps();
+    $('statTotal').textContent = total.toLocaleString();
+    $('barTotal').style.width = Math.min(100, total / 12) + '%';
+    $('statPace').textContent = exp.toLocaleString();
+    var tag = $('paceTag'), diff = total - exp;
+    if (exp === 0 && total === 0) tag.innerHTML = '<span class="pill warn">Starting this week</span>';
+    else if (diff >= 0) tag.innerHTML = '<span class="pill good">On pace, +' + diff + '</span>';
+    else if (diff > -60) tag.innerHTML = '<span class="pill warn">' + (-diff) + ' behind</span>';
+    else tag.innerHTML = '<span class="pill bad">' + (-diff) + ' behind</span>';
+    $('statWeek').textContent = wk;
+    $('barWeek').style.width = Math.min(100, wk / 1.2) + '%';
+    var days = Math.round(dayNum(DUE) - dayNum(t));
+    $('statDays').textContent = days >= 0 ? days : 0;
+    $('mockCount').textContent = mockCount();
+  }
+
+  function renderPhases(){
+    var t = dayNum(todayIso());
+    $('phaseRows').innerHTML = PHASES.map(function(p){
+      var now = t >= dayNum(p.start) && t <= dayNum(p.end);
+      var dates = p.start === p.end ? fmt(p.start) : fmt(p.start) + ' to ' + fmt(p.end);
+      return '<tr class="' + (now ? 'now' : '') + '"><td><strong>' + esc(p.name) + '</strong></td><td class="num">' + dates + '</td><td>' + esc(p.focus) + '</td><td class="num">' + (p.reps ? p.reps.toLocaleString() : '') + '</td></tr>';
+    }).join('');
+  }
+
+  function renderTimeline(){
+    var lo = dayNum(PHASES[0].start), hi = dayNum(DUE), L = 190, R = 640;
+    var X = function(iso){ return L + (dayNum(iso) - lo) / (hi - lo) * (R - L); };
+    var rowY = function(i){ return 70 + i * 30; };
+    var H = rowY(PHASES.length - 1) + 30;
+    var s = '<svg viewBox="0 0 760 ' + H + '" width="100%" style="min-width:600px" role="img" aria-label="Sign-off timeline, report due 27 February 2027" font-family="inherit" font-size="13">';
+    ['2026-12-01','2027-01-01','2027-02-01'].forEach(function(m){
+      s += '<line x1="' + X(m) + '" x2="' + X(m) + '" y1="40" y2="' + (H - 10) + '" stroke="#E2E0D9"/>';
+      s += '<text x="' + X(m) + '" y="30" text-anchor="middle" fill="#5E6677" font-size="12">' + fmt(m) + '</text>';
+    });
+    s += '<line x1="' + L + '" x2="' + R + '" y1="40" y2="40" stroke="#B9B6AC"/>';
+    var td = todayIso();
+    if (dayNum(td) >= lo && dayNum(td) <= hi){
+      s += '<line x1="' + X(td) + '" x2="' + X(td) + '" y1="40" y2="' + (H - 10) + '" stroke="#2E6BE6" stroke-dasharray="4 4"/>';
+      s += '<text x="' + X(td) + '" y="54" text-anchor="middle" fill="#2E6BE6" font-size="11" font-weight="600">Today</text>';
+    }
+    PHASES.forEach(function(p, i){
+      var y = rowY(i), last = i === PHASES.length - 1;
+      s += '<text x="20" y="' + (y + 4) + '" fill="#1C2230"' + (last ? ' font-weight="700"' : '') + '>' + esc(p.name) + '</text>';
+      if (p.start === p.end){
+        var x = X(p.start);
+        s += '<path d="M' + x + ' ' + (y - 8) + 'l8 8l-8 8l-8 -8z" fill="#2E6BE6"/>';
+        s += '<text x="' + (x - 14) + '" y="' + (y + 4) + '" text-anchor="end" fill="#1C2230" font-size="12" font-weight="700">' + fmt(p.start) + '</text>';
+      } else {
+        var x1 = X(p.start), x2 = X(p.end);
+        s += '<rect x="' + x1 + '" y="' + (y - 7) + '" width="' + Math.max(6, x2 - x1) + '" height="14" rx="7" fill="rgba(46,107,230,0.14)" stroke="#2E6BE6"/>';
+        s += '<text x="' + (x2 + 10) + '" y="' + (y + 4) + '" fill="#5E6677" font-size="12">' + fmt(p.start) + ' to ' + fmt(p.end) + '</text>';
+      }
+    });
+    s += '</svg>';
+    $('timeline').innerHTML = s;
+  }
+
+  function renderLog(){
+    var names = {}; DRILLS.forEach(function(d){ names[d.id] = d.name; });
+    var rows = state.log.slice().reverse().slice(0, 200);
+    $('logRows').innerHTML = rows.length ? rows.map(function(e){
+      var d = new Date(e.t);
+      var when = d.toLocaleDateString(undefined, {day:'numeric', month:'short'}) + ' ' + d.toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'});
+      var res = e.mock ? '<span class="pill good">Mock</span>' : (e.clean ? '<span class="pill good">Clean</span>' : '<span class="pill bad">Miss</span>');
+      return '<tr><td class="num">' + when + '</td><td>' + (e.mock ? 'Full mock' : esc(names[e.drill] || e.drill)) + '</td><td>' + res + '</td><td>' + esc(e.partner || '') + '</td><td class="num">' + esc(e.mins || '') + '</td><td>' + esc(e.fix || '') + '</td></tr>';
+    }).join('') : '<tr><td colspan="6" style="color:var(--muted)">No reps logged yet.</td></tr>';
+  }
+
+  function render(){ renderStats(); renderDrills(); renderChecklist('fixList', FIX, 'fix'); renderChecklist('dayList', DAY, 'day'); renderPhases(); renderTimeline(); renderLog(); }
+
+  function addRep(drill, clean, extra){
+    var e = {t:Date.now(), drill:drill, clean:!!clean};
+    if (extra){ if (extra.partner) e.partner = extra.partner; if (extra.mins) e.mins = extra.mins; if (extra.fix) e.fix = extra.fix; }
+    state.log.push(e); save(); render();
+  }
+
+  $('fDrill').innerHTML = DRILLS.map(function(d){ return '<option value="' + d.id + '">' + esc(d.name) + '</option>'; }).join('');
+
+  var submitClean = 1;
+  $('logForm').addEventListener('click', function(ev){ var b = ev.target.closest('button[data-clean]'); if (b) submitClean = +b.dataset.clean; });
+  $('logForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    addRep($('fDrill').value, submitClean, {partner:$('fPartner').value.trim(), mins:$('fMins').value.trim(), fix:$('fFix').value.trim()});
+    $('fFix').value = '';
+    toast(submitClean ? 'Clean rep logged' : 'Miss logged');
+  });
+
+  $('drills').addEventListener('click', function(ev){
+    var b = ev.target.closest('button[data-act]'); if (!b) return;
+    var id = b.dataset.id;
+    if (b.dataset.act === 'clean'){ addRep(id, true); toast('Clean rep logged'); }
+    else if (b.dataset.act === 'miss'){ addRep(id, false); toast('Miss logged'); }
+    else {
+      for (var i = state.log.length - 1; i >= 0; i--){ if (!state.log[i].mock && state.log[i].drill === id){ state.log.splice(i, 1); save(); render(); toast('Last rep removed'); return; } }
+      toast('Nothing to undo');
+    }
+  });
+
+  $('mockBtn').addEventListener('click', function(){ state.log.push({t:Date.now(), mock:true}); save(); render(); toast('Full mock logged'); });
+  $('mockUndo').addEventListener('click', function(){
+    for (var i = state.log.length - 1; i >= 0; i--){ if (state.log[i].mock){ state.log.splice(i, 1); save(); render(); toast('Last mock removed'); return; } }
+    toast('No mock to undo');
+  });
+
+  root.addEventListener('change', function(ev){
+    var c = ev.target; if (!c.matches('.checklist input[type=checkbox]')) return;
+    state[c.dataset.b][c.dataset.i] = c.checked; save(); render();
+  });
+
+  $('exportBtn').addEventListener('click', function(){
+    var blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'driving-reps-' + todayIso() + '.json';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+  });
+  $('importBtn').addEventListener('click', function(){ $('importFile').click(); });
+  $('importFile').addEventListener('change', function(){
+    var f = this.files && this.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function(){
+      try { var d = JSON.parse(r.result); if (!d || !Array.isArray(d.log)) throw 0; state = Object.assign(empty(), d); save(); render(); toast('Log imported'); }
+      catch(e){ toast('That file is not a rep log'); }
+    };
+    r.readAsText(f); this.value = '';
+  });
+  $('resetBtn').addEventListener('click', function(){
+    if (!confirm('Clear every logged rep and checklist tick in this browser?')) return;
+    state = empty(); save(); render(); toast('Reset');
+  });
+
+  render();
+})();
+</script>
+<script>
+(function(){
+  var tabs = {fight:{btn:document.getElementById('tab-fight'), panel:document.getElementById('fr-tab'), hash:''},
+              driving:{btn:document.getElementById('tab-driving'), panel:document.getElementById('driver-ot'), hash:'#driving'}};
+  function show(name, push){
+    document.title = name === 'driving' ? 'Driver OT Sign-off: Rule of 100' : "Liam's Fight Record";
+    Object.keys(tabs).forEach(function(k){ var on = k === name; tabs[k].btn.setAttribute('aria-selected', on ? 'true' : 'false'); tabs[k].panel.hidden = !on; });
+    if (push){ try { history.replaceState(null, '', tabs[name].hash || location.pathname + location.search); } catch(e){} }
+  }
+  tabs.fight.btn.addEventListener('click', function(){ show('fight', true); window.scrollTo(0, 0); });
+  tabs.driving.btn.addEventListener('click', function(){ show('driving', true); window.scrollTo(0, 0); });
+  window.addEventListener('hashchange', function(){ show(location.hash === '#driving' ? 'driving' : 'fight', false); });
+  show(location.hash === '#driving' ? 'driving' : 'fight', false);
 })();
 </script>
 </body>

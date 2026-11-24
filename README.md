@@ -20,10 +20,11 @@ the page reloads it. This repo is public, so that file is public too.
 Other export files (`fight-record*.json`) are ignored by git so one is not committed by
 accident.
 
-## Driver OT sign-off tracker
+## Driver OT tab
 
-`driving/index.html` is a separate page at `/driving/`: the Rule of 100 plan for the Driver OT
-sign-off. It tracks reps for 12 off-road drills (100 each, last 10 clean in a row), full mocks,
-the fix-now and assessment-day checklists, and pace against the timeline to the 27 Feb 2027
-report. Reps save in the browser (localStorage); use Export log to back them up.
-No names or client details are on the page, because this repo is public.
+The same `index.html` has a second tab, Driver OT (open it directly with `#driving`): the Rule
+of 100 plan for the Driver OT sign-off. It tracks reps for 12 off-road drills (100 each, last 10
+clean in a row), full mocks, the fix-now and assessment-day checklists, and pace against the
+timeline to the 27 Feb 2027 report. It runs in its own shadow root so its light styles and the
+fight record's dark styles stay apart. Reps save in the browser (localStorage); use Export log to
+back them up. No names or client details are on it, because this repo is public.
