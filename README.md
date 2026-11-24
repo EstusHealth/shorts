@@ -31,7 +31,8 @@ back them up. No names or client details are on it, because this repo is public.
 
 ## OT Driver Assessment Day Pack
 
-`day-pack.html` is the assessment-day web app (linked as Day pack in the tab bar). It has the day run sheet,
+The same `index.html` has a third tab, Day pack (open it directly with `#pack`, or a section with `#pack/s4`).
+It runs in its own shadow root like the Driver OT tab. `day-pack.html` now just redirects to it. It has the day run sheet,
 a run sheet, record form and notes for each of the 8 sections, timers for the timed tests, scores that flag
 against the cut-offs, a pre-drive summary that pulls the flags together, an on-road stage log with verbal and
 physical intervention counts, and a print kit (client sheets, a blank pack, or the filled-in assessment).
