@@ -394,6 +394,7 @@ textarea{min-height:64px;resize:vertical}
 /* Day pack tab: when it prints, only the day pack prints. */
 @media print{
   @page{size:A4;margin:12mm 12mm 14mm}
+  @page lic{size:A4;margin:0}
   html:has(body.printing-pack){background:#fff!important;color-scheme:light}
   body.printing-pack{background:#fff!important}
   body.printing-pack > *:not(#day-pack){display:none!important}
@@ -2173,6 +2174,11 @@ table.day input[type=time]{min-height:36px;padding:4px 6px;width:110px}
 .sheet .dg figure{margin:0;break-inside:avoid;border:1px solid #bbb;border-radius:6px;padding:6px}
 .sheet .dg figcaption{font-size:10.5pt}
 .sheet p{margin:6px 0}
+.sheet.img{page:lic;padding:0;margin:0;font-size:0}
+.sheet.img img{display:block;width:100%;height:296mm;max-height:100vh;object-fit:contain}
+.lic-list{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.lic-list li{font-size:13px;color:var(--muted)}
+.lic-list img{display:block;width:100%;aspect-ratio:210/297;object-fit:contain;background:#fff;border:1px solid var(--line2);border-radius:6px;margin-bottom:4px}
 </style>
 <div id="app">
 <header class="top noprint">
@@ -2265,7 +2271,7 @@ var SECTIONS = [
   prompts:['Upper limb findings','Lower limb findings','Pain and fatigue','Possible impact on-road and any modifications']},
  {id:'s4', n:4, title:'Cognition and perception', mins:35,
   purpose:'Screen attention, processing speed, planning, visual scanning, visuospatial skills and insight.',
-  setup:['Clear table. Client sheets face down in order. Pens, stopwatch (or the timers here).','iPad charged with DriveSafe and DriveAware.','Licensed sheets printed: Bells test, OT Drive Home Maze, Snellgrove Maze.','Give one instruction at a time. Always use the sample first.'],
+  setup:['Clear table. Client sheets face down in order. Pens, stopwatch (or the timers here).','iPad charged with DriveSafe and DriveAware.','Licensed sheets printed from Print kit: Bells test, OT Drive Home Maze, Snellgrove Maze.','Give one instruction at a time. Always use the sample first.'],
   steps:[['Trail Making A','Sample first. Then: “Draw a line from 1 to 2 to 3 and so on, as fast as you can, without lifting the pen.” Point out errors straight away; correction time counts. Stop at 5 minutes.'],
     ['Trail Making B','Sample first. Then: “Start at 1, draw to A, then 2, then B, and so on, switching between numbers and letters, until you finish. I’ll time you. Ready? Go.”'],
     ['Clock drawing','Blank sheet. “Draw a clock. Put in all the numbers and set the time to ten past eleven.” Not timed. Score the 7 items below.'],
@@ -2803,9 +2809,9 @@ function viewCutoffs(){
 }
 function viewPrint(){
   return head('Paper and data', 'Print kit and data') +
-    '<h3>Print</h3><div class="btnrow" style="margin-top:0"><button type="button" class="btn dark" data-print="client">Client sheets</button><button type="button" class="btn" data-print="blank">Blank pack (run sheets, record forms, notes)</button><button type="button" class="btn" data-print="record">This assessment, filled in</button></div>' +
-    '<p class="note">Client sheets: Estus consent form, Trail Making A and B with samples, clock drawing sheet, and the WA Road Law and Road Craft Screen. Print single-sided.</p>' +
-    '<div class="card" style="margin-top:12px"><b>Print from your licensed copies</b><p class="note" style="margin:6px 0 0">These tests are copyright and are not stored in this public app. Print them from Drive: <i>My Drive / 02 Driving OT / Driving Resources</i>.</p><ul class="dots" style="margin-top:6px"><li>Bells test (client sheet and your scoring sheet)</li><li>OT Drive Home Maze (OT-DORA)</li><li>Snellgrove Maze (practice and task)</li><li>Adelaide Driving Self-Efficacy Scale (ADSES)</li><li>DriveSafe and DriveAware run on the iPad</li></ul></div>' +
+    '<h3>Print</h3><div class="btnrow" style="margin-top:0"><button type="button" class="btn dark" data-print="client">Assessment sheets for the day</button><button type="button" class="btn" data-print="lic">Licensed sheets with instructions</button><button type="button" class="btn" data-print="blank">Blank pack (run sheets, record forms, notes)</button><button type="button" class="btn" data-print="record">This assessment, filled in</button></div>' +
+    '<p class="note">Assessment sheets for the day, in order: consent, ADSES, Trail Making A and B with samples, clock, Drive Home Maze, Snellgrove practice and task, Bells test sheet and scoring sheet, WA road law and intersections. Licensed sheets are included once loaded below. Print single-sided.</p>' +
+    licBox() +
     '<h3>Data</h3><div class="btnrow" style="margin-top:0"><button type="button" class="btn" id="exportBtn">Export this assessment (.json)</button><button type="button" class="btn" id="importBtn">Import</button><input type="file" id="importFile" accept="application/json,.json" hidden><button type="button" class="btn stop" id="newBtn">Start a new assessment</button></div>' +
     '<p class="note">Saved in this browser only. This page is public, but your entries never leave this device unless you export them. Export to the client file before starting a new assessment.</p>';
 }
@@ -2834,8 +2840,55 @@ function tmtSvg(pts, w, h, r, extra){
   return '<svg viewBox="' + (-pad) + ' ' + (-pad) + ' ' + (w + pad * 2) + ' ' + (h + pad * 2) + '" xmlns="http://www.w3.org/2000/svg"><rect x="' + (-pad + 1.5) + '" y="' + (-pad + 1.5) + '" width="' + (w + pad * 2 - 3) + '" height="' + (h + pad * 2 - 3) + '" fill="#fff" stroke="#000" stroke-width="2"/>' + c + (extra || '') + '</svg>';
 }
 function tag(t, x, y){ return '<text x="' + x + '" y="' + y + '" font-size="15" font-weight="700" text-anchor="middle" font-family="Arial">' + t + '</text>'; }
+/* ---------- licensed sheets: kept on this device only (IndexedDB), never in the public repo ---------- */
+var LIC_LABELS = ['ADSES','Drive Home Maze: instructions','Drive Home Maze: client sheet','Snellgrove: practice maze','Snellgrove: maze task','Bells: instructions','Bells: test sheet','Bells: scoring sheet'];
+var LIC = null, licBusy = '';
+var PDFJS = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/';
+function idb(){ return new Promise(function(res, rej){ if (!window.indexedDB) return rej(new Error('No storage')); var r = indexedDB.open('estus-day-pack', 1); r.onupgradeneeded = function(){ r.result.createObjectStore('files'); }; r.onsuccess = function(){ res(r.result); }; r.onerror = function(){ rej(r.error); }; }); }
+function idbDo(mode, fn){ return idb().then(function(db){ return new Promise(function(res, rej){ var tx = db.transaction('files', mode), q = fn(tx.objectStore('files')); tx.oncomplete = function(){ res(q && q.result); }; tx.onerror = function(){ rej(tx.error); }; tx.onabort = function(){ rej(tx.error); }; }); }); }
+function licInit(){ idbDo('readonly', function(st){ return st.get('licensed'); }).then(function(d){ LIC = d || null; if (route === 'print') render('print'); }).catch(function(){}); }
+function licStandard(){ return !!(LIC && LIC.pages && LIC.pages.length === LIC_LABELS.length && LIC.standard); }
+function licBox(){
+  var h = '<div class="card" style="margin-top:12px" id="licBox"><b>Licensed sheets on this device</b>';
+  if (licBusy) h += '<p class="note" style="margin:6px 0 0">' + esc(licBusy) + '</p>';
+  else if (LIC && LIC.pages && LIC.pages.length){
+    h += '<p class="note" style="margin:6px 0 0">' + LIC.pages.length + ' pages loaded from ' + esc(LIC.name || 'your file') + '. Saved in this browser only.' + (licStandard() ? '' : ' These pages print at the end of the assessment sheets.') + '</p><ul class="lic-list">' +
+      LIC.pages.map(function(src, i){ return '<li><img src="' + src + '" alt="">' + esc(LIC.labels[i] || ('Page ' + (i + 1))) + '</li>'; }).join('') + '</ul>';
+  } else h += '<p class="note" style="margin:6px 0 0">Not loaded yet. These tests are copyright, so they are not stored in this public app. Load <i>Estus licensed sheets.pdf</i> from Drive (<i>My Drive / 02 Driving OT / OT Driver Assessments</i>) once on each device. It holds the ADSES, Drive Home Maze, Snellgrove Maze and Bells test. DriveSafe and DriveAware run on the iPad.</p>';
+  h += '<div class="btnrow"><button type="button" class="btn" id="licLoad">' + (LIC ? 'Replace licensed sheets' : 'Load licensed sheets') + '</button>' + (LIC ? '<button type="button" class="btn" id="licClear">Remove from this device</button>' : '') + '<input type="file" id="licFile" accept="application/pdf,.pdf,image/*" multiple hidden></div></div>';
+  return h;
+}
+function readDataUrl(f){ return new Promise(function(res, rej){ var r = new FileReader(); r.onload = function(){ res(r.result); }; r.onerror = function(){ rej(r.error); }; r.readAsDataURL(f); }); }
+function pdfPages(f){
+  return import(PDFJS + 'pdf.min.mjs').then(function(lib){
+    lib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.mjs';
+    return f.arrayBuffer().then(function(buf){ return lib.getDocument({data:new Uint8Array(buf)}).promise; });
+  }).then(function(doc){
+    var out = [], chain = Promise.resolve();
+    for (var n = 1; n <= doc.numPages; n++) (function(n){ chain = chain.then(function(){ return doc.getPage(n); }).then(function(pg){
+      var vp = pg.getViewport({scale:2}), c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+      var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+      return pg.render({canvasContext:ctx, viewport:vp}).promise.then(function(){ out.push(c.toDataURL('image/png')); });
+    }); })(n);
+    return chain.then(function(){ return out; });
+  });
+}
+function licLoad(files){
+  files = Array.prototype.slice.call(files || []); if (!files.length) return;
+  licBusy = 'Loading ' + files.length + ' file' + (files.length > 1 ? 's' : '') + '\u2026'; render('print');
+  var pages = [], chain = Promise.resolve();
+  files.forEach(function(f){ chain = chain.then(function(){ return /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name) ? pdfPages(f) : readDataUrl(f).then(function(d){ return [d]; }); }).then(function(ps){ pages = pages.concat(ps); }); });
+  chain.then(function(){
+    var std = pages.length === LIC_LABELS.length && files.length === 1;
+    var d = {name:files.map(function(f){ return f.name; }).join(', '), at:new Date().toISOString(), standard:std, labels:std ? LIC_LABELS.slice() : pages.map(function(_, i){ return 'Page ' + (i + 1); }), pages:pages};
+    return idbDo('readwrite', function(st){ return st.put(d, 'licensed'); }).then(function(){ LIC = d; licBusy = ''; render('print'); toast(pages.length + ' pages loaded'); });
+  }).catch(function(err){ licBusy = ''; render('print'); toast('Could not load that file' + (err && err.message ? ': ' + err.message : '')); });
+}
+function licSheet(i){ return LIC && LIC.pages[i] ? '<section class="sheet img"><img src="' + LIC.pages[i] + '" alt="' + esc(LIC.labels[i] || '') + '"></section>' : ''; }
+function licSheets(){ return LIC && LIC.pages ? LIC.pages.map(function(_, i){ return licSheet(i); }).join('') : ''; }
 function clientSheets(){
   var p = [];
+  var std = licStandard();
   p.push('<section class="sheet">' + sheetHead('Consent: OT driver assessment') +
     '<p>I, ________________________________________, agree to Estus Health completing an occupational therapy driver assessment with me.</p>' +
     '<p><b>The assessment may include:</b></p><ul><li>an interview about my health, medications, driving history and goals</li><li>off-road checks of my vision, hearing, movement, thinking skills and road rule knowledge</li><li>an on-road drive in a dual-control car with a driving instructor</li><li>dash cam recording of the on-road drive (front view and inside the car, including sound), so the report is accurate. Footage is kept securely in my client file and is not shared without my consent.</li></ul>' +
@@ -2843,17 +2896,20 @@ function clientSheets(){
     '<p><b>The report can be sent to:</b> &nbsp;☐ me &nbsp;☐ my referrer &nbsp;☐ my GP &nbsp;☐ my NDIS plan manager or support coordinator &nbsp;☐ other: ______________________</p>' +
     '<p><b>Dash cam recording:</b> &nbsp;☐ I agree &nbsp;☐ I do not agree</p>' +
     '<table style="width:100%;margin-top:18px;border-collapse:collapse">' + ['Client','Parent, guardian or decision maker (if needed)','Occupational therapist'].map(function(r){ return '<tr><td style="padding:14px 0 4px;width:42%">' + r + '</td><td style="border-bottom:1px solid #000">Signed</td><td style="border-bottom:1px solid #000;width:22%">Date</td></tr>'; }).join('') + '</table></section>');
+  if (std) p.push(licSheet(0));
   p.push('<section class="sheet">' + sheetHead('Trail Making Part A: Sample') + '<div style="max-width:150mm;margin:18mm auto 0">' + tmtSvg(TMT.AS, 600, 370, 20, tag('Begin', 0.499 * 600, 0.609 * 370 + 40) + tag('End', 0.445 * 600, 0.304 * 370 - 28)) + '</div></section>');
   p.push('<section class="sheet">' + sheetHead('Trail Making Part A') + nameLine() + '<div style="max-width:178mm;margin:2mm auto 0">' + tmtSvg(TMT.A, 600, 730, 19) + '</div></section>');
   p.push('<section class="sheet">' + sheetHead('Trail Making Part B: Sample') + '<div style="max-width:150mm;margin:18mm auto 0">' + tmtSvg(TMT.BS, 600, 370, 20, tag('Begin', 0.451 * 600, 0.550 * 370 + 40) + tag('End', 0.317 * 600, 0.298 * 370 - 28)) + '</div></section>');
   p.push('<section class="sheet">' + sheetHead('Trail Making Part B') + nameLine() + '<div style="max-width:178mm;margin:2mm auto 0">' + tmtSvg(TMT.B, 600, 715, 19) + '</div></section>');
   p.push('<section class="sheet">' + sheetHead('Clock drawing') + nameLine() + '<p style="font-size:13pt;margin-top:10mm">“Please draw a clock. Put in all the numbers and set the time to ten past eleven.”</p></section>');
+  if (std) p.push(licSheet(2) + licSheet(3) + licSheet(4) + licSheet(6) + licSheet(7));
   p.push('<section class="sheet">' + sheetHead('WA road law and road craft', '<p style="font-size:10.5pt">Circle one answer for each question.</p>') + nameLine() +
     WAQ.map(function(q, i){ return '<div class="qq"><b>' + (i + 1) + '. ' + esc(q[0]) + '</b><ol>' + q[1].map(function(o){ return '<li>' + esc(o) + '</li>'; }).join('') + '</ol></div>'; }).join('') + '</section>');
   for (var pg = 0; pg < 2; pg++){
     p.push('<section class="sheet">' + sheetHead('WA intersections', pg === 0 ? '<p style="font-size:10.5pt">Write the order the road users go: 1st, 2nd, 3rd. P is a pedestrian. Arrows show where each vehicle is going.</p>' : '') +
       '<div class="dg">' + WAD.slice(pg * 4, pg * 4 + 4).map(function(d, j){ var i = pg * 4 + j; return '<figure>' + diagram(d, 100 + i, true) + '<figcaption><b>' + (i + 1) + '. ' + esc(d.title) + '</b><br>1st ______ &nbsp; 2nd ______' + (d.ans.length > 2 ? ' &nbsp; 3rd ______' : '') + '</figcaption></figure>'; }).join('') + '</div></section>');
   }
+  if (LIC && !std) p.push(licSheets());
   return p.join('');
 }
 
@@ -2874,6 +2930,7 @@ ROOT.addEventListener('change', function(e){
   var t = e.target;
   if (t.hasAttribute && t.hasAttribute('data-k') && (t.tagName === 'SELECT' || t.type === 'radio')){ S.v[t.getAttribute('data-k')] = t.value; save(); refreshFlags(); }
   if (t.hasAttribute && t.hasAttribute('data-chk')){ S.c[t.getAttribute('data-chk')] = t.checked; var li = t.closest('ol.steps li'); if (li) li.classList.toggle('done', t.checked); save(); refreshFlags(); }
+  if (t.id === 'licFile' && t.files && t.files.length){ licLoad(t.files); t.value = ''; return; }
   if (t.id === 'importFile' && t.files && t.files[0]){ var fr = new FileReader(); fr.onload = function(){ try { var d = JSON.parse(fr.result); if (!d || !d.v) throw 0; S = Object.assign(blankState(), d); save(); render(route); toast('Imported'); } catch(err){ toast('That file is not a day pack export'); } }; fr.readAsText(t.files[0]); t.value = ''; }
 });
 ROOT.addEventListener('click', function(e){
@@ -2892,11 +2949,14 @@ ROOT.addEventListener('click', function(e){
   if (b.hasAttribute('data-print')){ doPrint(b.getAttribute('data-print')); return; }
   if (b.id === 'exportBtn'){ var blob = new Blob([JSON.stringify(S, null, 2)], {type:'application/json'}); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'day-pack-' + (V('m_client') || 'client').replace(/[^\w-]+/g, '-') + '-' + (V('m_date') || new Date().toISOString().slice(0, 10)) + '.json'; document.body.appendChild(a); a.click(); a.remove(); return; }
   if (b.id === 'importBtn'){ $('#importFile').click(); return; }
+  if (b.id === 'licLoad'){ $('#licFile').click(); return; }
+  if (b.id === 'licClear'){ if (confirm('Remove the licensed sheets from this device?')){ idbDo('readwrite', function(st){ return st.delete('licensed'); }).catch(function(){}); LIC = null; render('print'); } return; }
   if (b.id === 'newBtn'){ if (confirm('Start a new assessment? This clears everything saved here. Export first if you need it.')){ S = blankState(); save(); location.hash = '#pack/overview'; render('overview'); toast('New assessment started'); } return; }
 });
 function doPrint(mode){
   HOST.classList.remove('print-client','blank');
   document.body.classList.add('printing-pack');
+  if (mode === 'lic'){ if (!LIC){ document.body.classList.remove('printing-pack'); toast('Load the licensed sheets first'); return; } $('#client').innerHTML = licSheets(); HOST.classList.add('print-client'); window.print(); if (!('onafterprint' in window)) restoreAfterPrint(); return; }
   if (mode === 'client'){ $('#client').innerHTML = clientSheets(); HOST.classList.add('print-client'); window.print(); if (!('onafterprint' in window)) restoreAfterPrint(); return; }
   if (mode === 'blank'){ pendingRestore = S; S = blankState(); HOST.classList.add('blank'); }
   renderAllForPrint();
@@ -2907,10 +2967,11 @@ var pendingRestore = null;
 function restoreAfterPrint(){ if (!document.body.classList.contains('printing-pack')) return; if (pendingRestore){ S = pendingRestore; pendingRestore = null; } HOST.classList.remove('print-client','blank'); document.body.classList.remove('printing-pack'); render(route); }
 window.addEventListener('afterprint', restoreAfterPrint);
 window.addEventListener('hashchange', function(){ var r = hashRoute(); if (r == null) return; render(r); window.scrollTo(0, 0); });
-window.__dayPack = {state:function(){ return S; }, clientSheets:clientSheets, renderAllForPrint:renderAllForPrint, render:render, blank:function(){ S = blankState(); }};
+window.__dayPack = {state:function(){ return S; }, clientSheets:clientSheets, licSheets:licSheets, lic:function(){ return LIC; }, renderAllForPrint:renderAllForPrint, render:render, blank:function(){ S = blankState(); }};
 
 load();
 render(hashRoute() || 'overview');
+licInit();
 })();
 </script>
 <script>

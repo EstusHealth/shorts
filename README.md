@@ -40,7 +40,9 @@ physical intervention counts, and a print kit (client sheets, a blank pack, or t
 - Road law uses an Estus WA Road Law and Road Craft Screen (15 questions, 8 intersection diagrams) written
   against WA rules as at November 2026. Check transport.wa.gov.au when rules change.
 - Client sheets drawn by the app: Estus consent form, Trail Making A and B with samples, clock sheet, WA screen.
-- Copyright tests (Bells, OT Drive Home Maze, Snellgrove Maze, ADSES, DriveSafe and DriveAware) are not in this
-  public repo. Print them from the licensed copies in Drive; the app only records their scores.
+- Copyright tests (Bells, OT Drive Home Maze, Snellgrove Maze, ADSES) are not in this public repo. Load
+  `Estus licensed sheets.pdf` from Liam's Drive into Print kit once per device: the pages are kept in that
+  browser (IndexedDB) and print in order with the other assessment sheets. pdf.js loads from jsDelivr only
+  when a PDF is loaded. DriveSafe and DriveAware run on the iPad.
 - Entries save in the browser (localStorage) on that device only. Nothing about a client is in the repo.
   Use Export in Print kit to save a copy to the client file before starting a new assessment.
