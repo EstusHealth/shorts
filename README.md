@@ -28,3 +28,18 @@ clean in a row), full mocks, the fix-now and assessment-day checklists, and pace
 timeline to the 27 Feb 2027 report. It runs in its own shadow root so its light styles and the
 fight record's dark styles stay apart. Reps save in the browser (localStorage); use Export log to
 back them up. No names or client details are on it, because this repo is public.
+
+## OT Driver Assessment Day Pack
+
+`day-pack.html` is the assessment-day web app (linked as Day pack in the tab bar). It has the day run sheet,
+a run sheet, record form and notes for each of the 8 sections, timers for the timed tests, scores that flag
+against the cut-offs, a pre-drive summary that pulls the flags together, an on-road stage log with verbal and
+physical intervention counts, and a print kit (client sheets, a blank pack, or the filled-in assessment).
+
+- Road law uses an Estus WA Road Law and Road Craft Screen (15 questions, 8 intersection diagrams) written
+  against WA rules as at November 2026. Check transport.wa.gov.au when rules change.
+- Client sheets drawn by the app: Estus consent form, Trail Making A and B with samples, clock sheet, WA screen.
+- Copyright tests (Bells, OT Drive Home Maze, Snellgrove Maze, ADSES, DriveSafe and DriveAware) are not in this
+  public repo. Print them from the licensed copies in Drive; the app only records their scores.
+- Entries save in the browser (localStorage) on that device only. Nothing about a client is in the repo.
+  Use Export in Print kit to save a copy to the client file before starting a new assessment.

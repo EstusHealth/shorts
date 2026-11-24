@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OT Driver Assessment Day Pack | Estus Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Barlow+Semi+Condensed:wght@500;600&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --b1:#344982;--b2:#2f6f9e;--b3:#2ca5b8;--b4:#ab5c95;
+  --ink:#111111;--ink2:#16151a;--muted:#55534e;--faint:#8a8880;
+  --plum:#84406f;--blue:#2f6f9e;--teal:#2ca5b8;
+  --canvas:#e9e7e4;--card:#fbfaf8;--white:#fff;--sand:#efe9db;
+  --line:#d6d4cf;--line2:#e6e4df;
+  --good:#1e8a5a;--good-soft:#e3f2ea;--warn:#a86a10;--warn-soft:#f8ecd6;--bad:#b23b30;--bad-soft:#f7e1de;
+  --display:'Oswald','Arial Narrow',sans-serif;--body:'Barlow','Segoe UI',system-ui,sans-serif;--label:'Barlow Semi Condensed','Arial Narrow',sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--canvas);color:var(--ink2);font:16px/1.45 var(--body)}
+button,input,select,textarea{font:inherit;color:inherit}
+.bands{display:flex;gap:3px;height:6px}.bands span{flex:1}
+.c1{background:var(--b1)}.c2{background:var(--b2)}.c3{background:var(--b3)}.c4{background:var(--b4)}
+.kick{font-family:var(--label);font-weight:600;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--plum)}
+.lab{font-family:var(--label);font-weight:600;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1,h2{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.03em;color:var(--ink);margin:0}
+h1{font-size:34px;line-height:1.05;margin-top:4px}
+h2{font-size:21px;margin:26px 0 10px}
+h3{font-family:var(--label);font-weight:600;font-size:13.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);margin:20px 0 8px}
+
+/* layout */
+.top{position:sticky;top:0;z-index:30;background:#111;color:#fff}
+.top .bar{display:flex;align-items:center;gap:14px;padding:10px 16px;max-width:1240px;margin:0 auto}
+.wm{display:flex;flex-direction:column;line-height:.85;margin-right:6px}
+.wm b{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:.02em}
+.wm i{font-style:normal;font-family:var(--display);font-weight:600;font-size:8.6px;letter-spacing:.3em;margin-top:2px}
+.top .who{flex:1;min-width:0;font-size:14px;color:#cfd6e2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .who b{color:#fff}
+.top .back{color:#cfd6e2;font-size:14px;text-decoration:none}
+.top .back:hover{color:#fff}
+.save{font-family:var(--label);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#7fd0dd}
+.wrap{display:grid;grid-template-columns:250px 1fr;gap:22px;max-width:1240px;margin:0 auto;padding:18px 16px 80px}
+nav.side{position:sticky;top:76px;align-self:start;background:var(--white);border:1px solid var(--line2);border-radius:12px;padding:8px}
+nav.side a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--ink2);text-decoration:none;font-weight:500;font-size:15px}
+nav.side a:hover{background:var(--card)}
+nav.side a.on{background:#111;color:#fff}
+nav.side a .n{font-family:var(--display);font-weight:600;width:20px;text-align:center;color:var(--blue)}
+nav.side a.on .n{color:#7fd0dd}
+nav.side a .dot{margin-left:auto;width:9px;height:9px;border-radius:50%;background:var(--line2);flex:none}
+nav.side a .dot.part{background:var(--b3)}nav.side a .dot.done{background:var(--good)}
+nav.side a .dot.flag{background:var(--bad)}
+nav.side hr{border:0;border-top:1px solid var(--line2);margin:6px 4px}
+main{min-width:0}
+.view{background:var(--white);border:1px solid var(--line2);border-radius:14px;padding:26px 28px 30px}
+.view + .view{margin-top:18px}
+.meta{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:10px;color:var(--muted)}
+.pill{display:inline-block;font-family:var(--label);font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:4px 11px;border-radius:99px;background:#111;color:#fff}
+.flagpill{display:inline-block;font-weight:600;font-size:13.5px;padding:3px 10px;border-radius:99px;line-height:1.35}
+.flagpill.ok{background:var(--good-soft);color:var(--good)}.flagpill.warn{background:var(--warn-soft);color:var(--warn)}.flagpill.bad{background:var(--bad-soft);color:var(--bad)}
+.flagpill.na{background:var(--card);color:var(--faint)}
+.tabs2{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 2px;border-bottom:1px solid var(--line2)}
+.tabs2 button{border:0;background:none;padding:9px 14px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;cursor:pointer}
+.tabs2 button.on{color:var(--ink);border-bottom-color:var(--b4)}
+.pane[hidden]{display:none}
+
+/* run sheet */
+ol.steps{list-style:none;counter-reset:s;margin:0;padding:0}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:34px 1fr 34px;gap:10px;align-items:start;padding:11px 0;border-bottom:1px solid var(--line2)}
+ol.steps li:before{content:counter(s);font-family:var(--display);font-weight:600;font-size:20px;color:var(--b1);line-height:1.1}
+ol.steps li.done > div{color:var(--faint)}
+ol.steps b{color:var(--ink)}
+.tick{width:26px;height:26px;accent-color:var(--good);cursor:pointer;margin:0}
+ul.dots{list-style:none;margin:0;padding:0}
+ul.dots li{position:relative;padding-left:16px;margin:5px 0}
+ul.dots li:before{content:"";position:absolute;left:0;top:.58em;width:7px;height:7px;background:var(--b3)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.say{background:var(--sand);border-left:4px solid var(--b4);padding:12px 16px;border-radius:0 8px 8px 0;font-style:italic;margin-top:16px}
+.say .lab{display:block;font-style:normal;color:var(--plum);margin-bottom:3px}
+.alert{border:1.5px solid var(--b4);border-radius:10px;padding:12px 16px;margin-top:14px}
+.alert .lab{color:var(--plum);display:block;margin-bottom:4px}
+table.cut{width:100%;border-collapse:collapse;font-size:15px}
+table.cut td{padding:7px 8px;border-bottom:1px solid var(--line2);vertical-align:top}
+table.cut td:first-child{font-weight:600;width:36%}
+.note{font-size:14px;color:var(--muted)}
+
+/* record forms */
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px 14px}
+.f{display:flex;flex-direction:column;gap:4px;grid-column:span 6}
+.f.h2c{grid-column:span 3}.f.h3c{grid-column:span 2}.f.h1c{grid-column:span 1}
+.f > span{font-size:13.5px;font-weight:600;color:var(--muted)}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;min-height:42px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--b3);outline-offset:0;border-color:var(--b3)}
+textarea{min-height:84px;resize:vertical;field-sizing:content}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{border:0;background:none;padding:9px 14px;cursor:pointer;font-weight:600;color:var(--muted);min-height:42px}
+.seg button + button{border-left:1px solid var(--line)}
+.seg button.on{background:#111;color:#fff}
+.ynrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2)}
+table.rec{width:100%;border-collapse:collapse;font-size:15px}
+table.rec th{text-align:left;font-family:var(--label);font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:#111;padding:8px}
+table.rec td{padding:5px 6px;border-bottom:1px solid var(--line2);vertical-align:middle}
+table.rec td:first-child{font-weight:600}
+table.rec select,table.rec input{min-height:38px;padding:6px 8px}
+.timer{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:12px 14px;margin:10px 0}
+.timer .name{font-weight:700;min-width:150px}
+.timer .clock{font-family:var(--display);font-weight:500;font-size:28px;min-width:96px;font-variant-numeric:tabular-nums}
+.timer input{width:96px}
+.timer .grow{flex:1}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer;min-height:42px}
+.btn:hover{border-color:var(--muted)}
+.btn.dark{background:#111;color:#fff;border-color:#111}
+.btn.go{background:var(--good);border-color:var(--good);color:#fff}
+.btn.stop{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.sm{padding:5px 10px;min-height:34px;font-size:14px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.flags{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.flags:empty{display:none}
+.out{font-weight:700}
+.notes .nb{margin-bottom:12px}
+.notes .nb > span{display:block;font-family:var(--label);font-weight:600;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--b1);margin-bottom:4px}
+.notes textarea{min-height:110px}
+.card{background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:14px 16px}
+.list-check{list-style:none;margin:0;padding:0}
+.list-check li{display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line2)}
+.list-check input{width:22px;height:22px;accent-color:var(--good)}
+table.day{width:100%;border-collapse:collapse}
+table.day th{text-align:left;font-family:var(--label);font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:#111;padding:8px}
+table.day td{padding:8px;border-bottom:1px solid var(--line2);vertical-align:top}
+table.day td.t{font-family:var(--display);font-size:18px;width:60px}
+table.day input[type=time]{min-height:36px;padding:4px 6px;width:110px}
+.prog{height:8px;background:var(--line2);border-radius:99px;overflow:hidden}
+.prog span{display:block;height:100%;background:var(--b3)}
+.secgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px}
+.secgrid a{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:12px 14px}
+.secgrid a:hover{border-color:var(--muted)}
+.secgrid .t{font-weight:700;margin:2px 0 8px}
+.diag{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.diag figure{margin:0;background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:10px}
+.diag figcaption{font-size:14.5px;margin-top:6px}
+.diag svg{width:100%;height:auto;display:block;background:#fff;border-radius:8px}
+.q{padding:12px 0;border-bottom:1px solid var(--line2)}
+.q .opts{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.q label{display:flex;gap:9px;align-items:flex-start;cursor:pointer;padding:5px 8px;border-radius:8px}
+.q label:hover{background:var(--card)}
+.q input[type=radio]{width:20px;height:20px;margin-top:2px;accent-color:var(--b1)}
+.key .ans{background:var(--good-soft)}
+.q .why{display:none;font-size:14px;color:var(--good);margin:6px 0 0 8px}
+.key .q .why{display:block}
+.q .res{float:right}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60}
+.toast.show{opacity:.96}
+.tally{display:inline-flex;align-items:center;gap:6px}
+.tally b{min-width:22px;text-align:center;font-variant-numeric:tabular-nums}
+#client{display:none}
+
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr}
+  nav.side{position:static;display:flex;overflow-x:auto;gap:4px}
+  nav.side a{white-space:nowrap}
+  nav.side hr,nav.side a .dot{display:none}
+  .cols{grid-template-columns:1fr}
+  .f.h2c,.f.h3c{grid-column:span 6}
+  .f.h1c{grid-column:span 3}
+  .view{padding:20px 16px}
+}
+
+/* ---------- print ---------- */
+@page{size:A4;margin:12mm 12mm 14mm}
+@media print{
+  body{background:#fff;font-size:10.5pt}
+  .top,nav.side,.noprint,.btnrow,.tabs2,.toast,.timer .btn{display:none!important}
+  .wrap{display:block;padding:0;max-width:none}
+  .view{border:0;border-radius:0;padding:0;display:block!important;break-before:page}
+  .view:first-child{break-before:auto}
+  .pane{display:block!important}
+  .pane + .pane{break-before:page}
+  h1{font-size:22pt}h2{font-size:14pt;margin:14px 0 6px}
+  input,select,textarea{border:0;border-bottom:1px solid #999;border-radius:0;min-height:0;padding:3px 2px;background:transparent}
+  select{-webkit-appearance:none;appearance:none}
+  textarea{min-height:22mm;border:1px solid #bbb;border-radius:4px}
+  .notes textarea{min-height:30mm}
+  .seg{border:0}.seg button{display:none;padding:2px 6px;min-height:0}.seg button.on{display:inline;background:none;color:#000;border:1px solid #000;border-radius:4px}
+  body.blank .seg button{display:inline;background:none;color:#000}
+  .timer{background:none;border:1px solid #ccc;padding:6px 10px}
+  .timer .clock{display:none}
+  .diag figure,.q,.timer,table.rec tr,ol.steps li,.nb,.card{break-inside:avoid}
+  .say{background:#f4f1ea}
+  body.print-client #app{display:none!important}
+  body.print-client #client{display:block!important}
+  .flagpill{border:1px solid currentColor}
+  .grid{grid-template-columns:repeat(6,1fr)!important}
+  .f.h2c{grid-column:span 3!important}.f.h3c{grid-column:span 2!important}.f.h1c{grid-column:span 1!important}
+  .cols{grid-template-columns:1fr 1fr!important}
+  .secgrid{grid-template-columns:repeat(4,1fr)}
+  input::-webkit-calendar-picker-indicator{display:none}
+  input[type=text],input[type=number],input[type=date],input[type=time],select{min-height:24px}
+}
+/* client sheets */
+.sheet{break-after:page;font-size:12pt}
+.sheet:last-child{break-after:auto}
+.sheet .hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:10px}
+.sheet .hd .t{font-family:var(--display);font-weight:600;font-size:20pt;text-transform:uppercase}
+.sheet .hd .bandsm{display:flex;gap:2px;width:90px;margin-bottom:4px}.sheet .hd .bandsm span{flex:1;height:5px}
+.sheet .line{display:flex;gap:18px;margin:6px 0 10px;font-size:11.5pt}
+.sheet .line span{flex:1;border-bottom:1px solid #000;min-height:20px}
+.sheet svg{width:100%;display:block}
+.sheet .qq{margin:0 0 9px;break-inside:avoid}
+.sheet .qq ol{margin:3px 0 0 0;padding-left:22px;list-style:lower-alpha}
+.sheet .dg{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
+.sheet .dg figure{margin:0;break-inside:avoid;border:1px solid #bbb;border-radius:6px;padding:6px}
+.sheet .dg figcaption{font-size:10.5pt}
+.sheet p{margin:6px 0}
+</style>
+</head>
+<body>
+<div id="app">
+<header class="top noprint">
+  <div class="bands"><span class="c1"></span><span class="c2"></span><span class="c3"></span><span class="c4"></span></div>
+  <div class="bar">
+    <div class="wm"><b>ESTUS</b><i>HEALTH</i></div>
+    <div class="who" id="who">OT Driver Assessment Day Pack</div>
+    <span class="save" id="saveState">Saved on this device</span>
+    <a class="back" href="./#driving">Driver OT tracker</a>
+  </div>
+</header>
+<div class="wrap">
+  <nav class="side noprint" id="nav" aria-label="Sections"></nav>
+  <main id="views"></main>
+</div>
+</div>
+<div id="client"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var KEY = 'estus-day-pack-v1';
+var $ = function(s, r){ return (r || document).querySelector(s); };
+var $$ = function(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function toast(m){ var t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(function(){ t.classList.remove('show'); }, 1800); }
+
+/* ======================= CONTENT ======================= */
+var WA_LICENCE = [
+  'Learner’s permit from 16, after passing the theory test. L plates front and back. Zero blood alcohol.',
+  'Learners may drive up to 100 km/h where the limit allows it.',
+  'Under 25: at least 50 supervised hours, including 5 at night, logged before the Practical Driving Assessment (PDA).',
+  'Hazard Perception Test (HPT) after 6 months on L plates. It must be passed before the PDA.',
+  'PDA from 17. Pass it and get P plates.',
+  'Red P plates for the first 6 months: no driving midnight to 5 am, and only 1 passenger at all times (Tom’s Law, some exemptions). Then green P plates. Zero blood alcohol for all P platers.',
+  'Announced April 2026, start date not set: 12 month learner period, 80 supervised hours (10 at night), 3 years on P plates, and a mobile phone ban for L and P drivers. Check transport.wa.gov.au before quoting these to families.'
+];
+
+var SECTIONS = [
+ {id:'s1', n:1, title:'Welcome, consent and interview', mins:40,
+  purpose:'Settle the client, get consent, sight documents and build the full picture of their health, driving and goals.',
+  setup:['Quiet room, soft lighting, water on the table. Fidgets welcome.','Show the client the day plan so there are no surprises.','Licence or learner’s permit, driving glasses, medication list, referral and medical clearance ready.'],
+  steps:[['Introduce','Who is here and their role. What today looks like, start to finish. Breaks are fine any time, just ask.'],
+    ['Consent','Client signs the Estus consent form, including dash cam recording. Under 18 or a substitute decision maker: they sign too. Confirm who gets the report.'],
+    ['Sight documents','WA licence or learner’s permit: number, class, conditions, expiry. Medical clearance or GP letter.'],
+    ['Interview','Medical history, current symptoms, medications (name, dose, time taken today, side effects), driving history, driving needs, why driving matters, expectations.'],
+    ['Neurodivergent extras','Sensory load in a car (noise, light, seat feel, smells). What helps them regulate. Anxiety about driving. Medication timing against drive time. Sleep last night. Eaten today. How past lessons felt.'],
+    ['Self-efficacy','Adelaide Driving Self-Efficacy Scale (ADSES), printed from your licensed copy. Enter the 12 item scores below.']],
+  say:'“Today has a few parts: some questions, some eye and movement checks, some pen and paper tasks, then a drive. I’ll tell you what’s next each time. You can ask for a break whenever you need one.”',
+  watch:['Gap between what the client says and what family report (insight).','Masking: looks fine, but is working hard to hold it together.','Stimulant timing: will it wear off before or during the drive?'],
+  scores:[],
+  prompts:['Key history and goals','In their words (quotes worth using in the report)','Medication timing today and sleep','Sensory and regulation notes','Carry forward to the on-road and report']},
+ {id:'s2', n:2, title:'Hearing and vision', mins:15,
+  purpose:'Screen hearing, communication and vision against the Austroads private vehicle standard.',
+  setup:['Eye chart at the right distance (6 m, or a 3 m chart). Measure it.','Pen torch, occluder or eye patch, two pens. Good even lighting.','Client wears their driving glasses for acuity. Off for fields and slow pursuits.'],
+  steps:[['Hearing and communication','Hearing aids? Follows verbal instructions? Any communication issues seen?'],
+    ['Visual history','Last optometrist or eye specialist visit. Glasses. Eye treatments. Symptoms: blur, double vision, missing areas, flashes.'],
+    ['Visual acuity','Right, left, then both eyes. Uncorrected and corrected. Record 6/x. Up to 2 errors on a line still counts as that line.'],
+    ['Visual fields','Confrontation, no glasses. Sit opposite at about 0.5 m, eyes level. Client covers one eye, you close your matching eye. Client looks into your open eye. Bring a finger in from 2 to 3 points per quadrant. Compare to your own field.'],
+    ['Strabismus','Pen torch at 0.5 m. Light reflex in the same spot in both eyes? Cover and uncover each eye: movement of the uncovered eye means a deviation.'],
+    ['Eye movements','Slow (no glasses): follow a pen at 30 cm through a wide H, head still. Fast (glasses on): two pens 10 cm either side of the nose, look quickly between them, horizontal then vertical, then near pen to far chart.'],
+    ['Other','Colour vision, glare, night vision, contrast. Note nystagmus.']],
+  say:'“Keep your head still and look right into my eye. Say ‘now’ as soon as you see my finger move.”',
+  watch:['Confrontation is a screen only. It misses small field losses.','Fatigue, squinting, head tilt, or moving the head to track.'],
+  scores:[['Visual acuity (private, unconditional)','6/12 or better with both eyes together, or in one eye, with the lenses worn for driving.'],
+    ['Absolute floor','No licence if the better eye is worse than 6/24.'],
+    ['Visual fields (private, unconditional)','At least 110° horizontal within 10° above and below the midline. No significant loss within 20° of fixation.'],
+    ['Action','Below standard, or any doubt: refer to an optometrist or ophthalmologist for formal testing. Below the acuity standard: do not go on-road.']],
+  prompts:['Acuity and fields summary','Eye movements and other findings','Possible impact on-road','Referrals needed']},
+ {id:'s3', n:3, title:'Physical', mins:15,
+  purpose:'Check the body can control the car: reach, grip, steer, pedal, check over the shoulder, and keep it up.',
+  setup:['Firm chair without arms. All tests done sitting, like driving.','Two tape crosses on the floor at brake and accelerator spots. Stopwatch. Goniometer if needed.'],
+  steps:[['Range of movement','Shoulders, elbows, forearms, wrists, fingers, hips, knees, ankles. Trunk and neck rotation for head checks.'],
+    ['Strength','Oxford scale 0 to 5. Resist at the end of range. Grip both hands. Lower limb against resistance.'],
+    ['Tone','Only if history or what you see points to it.'],
+    ['Coordination, upper limb','Finger to nose, finger to finger, rapid pronation and supination, wrist tapping, thumb opposition.'],
+    ['Coordination, lower limb','Foot rotation and tapping. Heel pivot: 15 taps side to side. Right foot accelerator and brake sequence: acc, brake, acc, acc, brake, acc, brake, brake.'],
+    ['Sensation and proprioception','Eyes closed. Copy arm positions you set (steering wheel, seatbelt, mirror, window). Ankle up or down. Feet between the tape crosses with eyes closed.'],
+    ['Function','Sitting balance, getting in and out of a car, pain (0 to 10), fatigue.']],
+  say:'“Eyes closed now. I’ll move this arm, and I’d like you to copy the position with your other arm.”',
+  watch:['Hypermobility: fatigue and grip on longer drives.','Motor planning and timing (DCD, dyspraxia): foot placement, smoothness, two-handed steering.','Pain or fatigue that will build over the drive.'],
+  scores:[['Heel pivot','15 taps side to side in under 9 seconds, each foot.'],['Accelerator and brake sequence','Accurate, controlled placement with no hesitation or misses.'],['Neck rotation','Enough to complete head checks over each shoulder.']],
+  prompts:['Upper limb findings','Lower limb findings','Pain and fatigue','Possible impact on-road and any modifications']},
+ {id:'s4', n:4, title:'Cognition and perception', mins:35,
+  purpose:'Screen attention, processing speed, planning, visual scanning, visuospatial skills and insight.',
+  setup:['Clear table. Client sheets face down in order. Pens, stopwatch (or the timers here).','iPad charged with DriveSafe and DriveAware.','Licensed sheets printed: Bells test, OT Drive Home Maze, Snellgrove Maze.','Give one instruction at a time. Always use the sample first.'],
+  steps:[['Trail Making A','Sample first. Then: “Draw a line from 1 to 2 to 3 and so on, as fast as you can, without lifting the pen.” Point out errors straight away; correction time counts. Stop at 5 minutes.'],
+    ['Trail Making B','Sample first. Then: “Start at 1, draw to A, then 2, then B, and so on, switching between numbers and letters, until you finish. I’ll time you. Ready? Go.”'],
+    ['Clock drawing','Blank sheet. “Draw a clock. Put in all the numbers and set the time to ten past eleven.” Not timed. Score the 7 items below.'],
+    ['OT Drive Home Maze','Sheet face down. Read the script from the test manual. Time from when they first look, including planning.'],
+    ['Snellgrove Maze','If using. Practice maze first, then the timed task.'],
+    ['Bells test','Name the items first. “Circle all the bells you can find. Tell me when you think you have them all.” Number bells in order on your scoring sheet, out of view. Prompt once if they stop early.'],
+    ['DriveSafe and DriveAware','On the iPad. DriveAware compares the client’s rating with yours: gaps show insight.']],
+  say:'“These are pen and paper tasks. Some are timed. Speed and accuracy both matter, but if you make a mistake I’ll point it out and you just fix it.”',
+  watch:['Timed tasks can spike anxiety. Note if pressure, not ability, is driving the result.','Do not help once timing starts. If you do, note it in the report.','Scanning strategy on Bells: organised rows or scattered?'],
+  scores:[['Trail Making B','Driving threshold 180 s with no more than 1 error. Norms: average 75 s, deficient over 273 s.'],
+    ['Trail Making A','Average 29 s, deficient over 78 s.'],
+    ['Clock drawing (Freund)','Cut-off 4 out of 7.'],
+    ['OT Drive Home Maze','Over 100 s, or more than 1 error: watch closely on-road.'],
+    ['Snellgrove Maze','Over 60 s, or 2 or more errors: flag.'],
+    ['Bells test','More than 3 omissions: possible attention deficit. 6 or more on one side: possible neglect. Max 35 bells.'],
+    ['DriveSafe (original)','/128: 76 or under lower range, 77 to 95 middle, over 95 upper. iPad version /84: use the bands in the app.'],
+    ['If used: MoCA / ACE','MoCA under 25 of 30: moderate likelihood of failing on-road. ACE 31 to 66 of 100: potential for unsafe driving.']],
+  prompts:['How they approached the tasks','Anxiety, regulation and pace','Strategic / tactical / operational impact','Carry forward to the on-road']},
+ {id:'s5', n:5, title:'Road law and road craft (WA)', mins:20,
+  purpose:'Check WA road rule knowledge and the ability to apply it to traffic situations.',
+  setup:['Print the WA Road Law and Road Craft Screen from Print kit. Reading glasses if needed.','Keep the answer key on your screen, out of the client’s view.'],
+  steps:[['Written questions','15 multiple choice questions on WA rules. Client circles one answer each.'],
+    ['Intersection diagrams','8 diagrams. Client writes the order the road users go: 1st, 2nd, 3rd.'],
+    ['Talk it through','Pick 2 or 3 they got wrong. Ask them to explain their thinking out loud.'],
+    ['Reading support','If reading is hard, read the questions aloud and note that you did.'],
+    ['Enter answers','Tap their answers below. The screen marks them against the WA key.']],
+  say:'“Imagine you are the driver in each picture. Tell me who goes first and why.”',
+  watch:['Static questions are easier than real traffic. A good score does not guarantee good on-road application.','Rule rigidity: knows the rule but may struggle when traffic does not follow it.','Check transport.wa.gov.au if a rule may have changed since this screen was written (November 2026).'],
+  scores:[['WA screen','Estus screen, not normed. Look at which rules they missed, not just the total. Any miss on give way, speed limits or novice driver rules goes on the on-road plan.'],
+    ['Intersection diagrams','Tests planning, problem solving and visuospatial skills as well as rule knowledge.']],
+  prompts:['Rules they know well','Rules or situations they got wrong','How they reasoned out loud','Routes or situations to test on-road']},
+ {id:'s6', n:6, title:'Pre-drive summary and go or no-go', mins:10,
+  purpose:'Pull the off-road findings together, set what to test on-road, and decide if it is safe to drive today.',
+  setup:['Short break for the client while you do this.','Have the planned route and the instructor ready.'],
+  steps:[['Review flags','Check the flags pulled through from sections 2 to 5 below.'],
+    ['Summarise','For each area: the issue, the possible impact on-road, and what to look for.'],
+    ['Decide','Proceed as planned. Proceed with changes (shorter, quieter, simpler route). Or do not proceed today, and explain why and what happens next.'],
+    ['Brief the instructor','Key concerns, route changes, how you will give directions, when to intervene.'],
+    ['Brief the client','Route, how long, how directions will be given, that dual brake use is normal and not a fail, they can ask to stop.']],
+  say:'“I’ll give you directions early and one at a time, like ‘at the next roundabout, turn right’. If anything feels too much, tell us and we’ll find a safe spot to stop.”',
+  watch:[],
+  nogo:['No valid licence or learner’s permit sighted.','No medical clearance where one is needed.','Below the Austroads acuity standard.','Cannot safely operate pedals or steering.','Acutely distressed, unwell, very fatigued, or affected by alcohol or drugs.','Off-road results show a safety risk that outweighs what the drive would tell you.'],
+  scores:[],
+  prompts:['Hypotheses to test on-road','Route plan (stages, roads, suburbs)','Instructor briefing notes','If not proceeding: reason and plan']},
+ {id:'s7', n:7, title:'On-road assessment', mins:50,
+  purpose:'See how the client actually drives across a graded route, and record it.',
+  setup:['Dual-control car, fuelled, L plates on. Insurance current.','Dash cams charged, recording, cards cleared. Front and cabin views. Consent for recording signed.','Roles: driving instructor in front with dual controls, OT in the back. OT-only model (OT in front with dual controls) only once the OT holds a WA driving instructor licence.','Note weather, traffic, start time and time since medication.'],
+  steps:[['Familiarise','Car park. Seat, mirrors, belt, controls, start-up, moving off, stopping. About 10 minutes.'],
+    ['Grade the route','Quiet 50 km/h streets, then two-lane roads, give way and stop signs, roundabouts, traffic lights including right turns, multi-lane 60 to 70 km/h, merging if appropriate.'],
+    ['Manoeuvres','As needed: kerbside park, reverse park, three-point turn.'],
+    ['Directions','Early, one at a time, same wording every time. Point as well as say left or right.'],
+    ['Record','Log each stage below. Tap V for a verbal prompt, P for a physical intervention (dual brake or steering).']],
+  say:'“Drive the way you normally would. I’ll be writing a lot. That’s just how I keep track, it doesn’t mean something went wrong.”',
+  watch:['Strategic: route sense, planning ahead, choosing to stop when overloaded.','Tactical: gap selection, speed for conditions, hazard response, merging, school zones, keeping left on 90 km/h+ multi-lane roads.','Operational: steering, pedal control, lane position, smoothness.','Sensory overload or freezing. Literal reading of directions. Following rules when traffic flow says otherwise. Fatigue late in the drive.'],
+  stop:'Unsafe at any point: direct the client to pull over safely. The instructor takes over and drives back. End the on-road part. Record what happened.',
+  scores:[],
+  prompts:['Strengths seen','Errors and interventions','Strategic / tactical / operational summary']},
+ {id:'s8', n:8, title:'Debrief and next steps', mins:15,
+  purpose:'Give clear, kind feedback, agree next steps, and make sure the client leaves regulated.',
+  setup:['Back in the quiet room. Water. Support person present if the client wants them.'],
+  steps:[['Client first','“How did that feel? What went well? What was hard?”'],
+    ['Feedback','Two or three strengths, two or three focus areas. Plain words. Link each to something they did.'],
+    ['Next steps','Lessons with an OT-informed instructor (how many, how often), a re-assessment, a referral, vehicle modifications, or not recommended at this time and what would change that.'],
+    ['The report','Who it goes to and when. NDIS: it supports funding for lessons. Medical fitness: it goes to the GP, and the licensing decision sits with the WA Department of Transport and Major Infrastructure (DTMI).'],
+    ['Before they go','Check they are settled. Confirm who is driving them home.'],
+    ['After they go','Back up dash cam footage to the client file. Finish your clinical reasoning today. Start the report in the report builder.']],
+  say:'“Here’s what you did well today, and here are the two things we’ll work on next.”',
+  watch:['Do not promise a licensing outcome. That decision is not ours alone.','Hard news: say it plainly, then go straight to what happens next.'],
+  scores:[],
+  prompts:['What the client said in the debrief','Strengths shared','Focus areas shared','Agreed next steps and who does what']}
+];
+
+var DAY = [['0:00',10,'Arrive and settle','Welcome, day plan, consent, sight licence and clearance','s1'],
+  ['0:10',30,'1  Interview','History, medications, driving needs, sensory and regulation, ADSES','s1'],
+  ['0:40',15,'2  Hearing and vision','Acuity, fields, strabismus, eye movements','s2'],
+  ['0:55',15,'3  Physical','ROM, strength, coordination, pedal sequence, proprioception','s3'],
+  ['1:10',35,'4  Cognition and perception','TMT A and B, clock, mazes, Bells, DriveSafe, DriveAware','s4'],
+  ['1:45',10,'Break','Water, movement, toilet',''],
+  ['1:55',20,'5  Road law and road craft','WA written questions and intersection diagrams','s5'],
+  ['2:15',10,'6  Pre-drive summary','Flags, go or no-go, brief instructor and client','s6'],
+  ['2:25',50,'7  On-road','Familiarise, graded route, manoeuvres, record','s7'],
+  ['3:15',15,'8  Debrief','Feedback, next steps, check regulation','s8'],
+  ['3:30',0,'Finish','Back up footage, finish clinical reasoning','']];
+var BEFORE = ['Referral received and read','Medical clearance or GP letter received','Consent form sent ahead','Licence or permit valid on the day','Client bringing driving glasses','Medication timing planned against drive time','Instructor booked and briefed','Route planned and checked','Support person attending (if wanted)','Funding confirmed (NDIS or private invoice)','Weather checked'];
+var KIT = ['Printed client sheets (Print kit)','Licensed sheets: Bells, Drive Home Maze, Snellgrove, ADSES','Eye chart (6 m or 3 m) and tape measure','Pen torch, occluder or eye patch','Stopwatch or this app on the iPad','Masking tape for floor crosses','Goniometer (if needed)','iPad charged: DriveSafe, DriveAware','Dual-control car, fuelled, L plates','Dash cams charged, cards cleared','Pens, clipboard, water, tissues, fidgets'];
+
+/* ---------- WA road law screen (Estus) ---------- */
+var WAQ = [
+ ['Unless a sign shows otherwise, what is the speed limit in a built-up area in WA?',['40 km/h','50 km/h','60 km/h'],1,'Default built-up area limit is 50 km/h.'],
+ ['Unless a sign shows otherwise, what is the speed limit outside a built-up area in WA?',['100 km/h','110 km/h','90 km/h'],1,'WA default outside built-up areas is 110 km/h.'],
+ ['When does a 40 km/h school zone apply?',['All day on school days','7.30 to 9 am and 2.30 to 4 pm on school days, unless signs say otherwise','Only when you can see children'],1,'Standard WA school zone times.'],
+ ['What is the highest speed a learner driver may drive in WA?',['80 km/h','90 km/h','100 km/h'],2,'Learners may drive up to 100 km/h where the limit allows.'],
+ ['What blood alcohol level must L and P plate drivers have?',['0.00','Under 0.02','Under 0.05'],0,'Zero BAC for all novice drivers.'],
+ ['In good conditions, what is the minimum gap to keep behind the vehicle in front?',['1 second','2 seconds','Two car lengths'],1,'At least two seconds; more in poor conditions.'],
+ ['On a multi-lane road with a speed limit of 90 km/h or more, which lane should you drive in?',['Any lane','The left lane, unless overtaking, turning right, avoiding an obstruction or in heavy traffic','The right lane'],1,'WA keep left rule at 90 km/h and above, or where signed.'],
+ ['May you make a U-turn at traffic lights?',['Yes, if it is safe','Only if there is a “U-turn permitted” sign','Only on a green arrow'],1,'No U-turn at lights unless a U-turn permitted sign is shown.'],
+ ['At a roundabout, who must you give way to?',['Vehicles already in the roundabout','Vehicles on your left','Nobody if you arrive first'],0,'Give way to vehicles already in the roundabout.'],
+ ['You are going straight through a roundabout. How do you signal?',['Signal right as you approach','No signal on approach, then signal left after passing the exit before yours, if practicable','Signal left as you approach'],1,'Straight ahead: no signal on approach, left signal to exit if practicable.'],
+ ['Two lanes become one and the lane lines end. Who goes first?',['The vehicle on the right','Whichever vehicle is in front','The vehicle on the left'],1,'Where lanes merge and lines end, the vehicle ahead has right of way.'],
+ ['You are passing a cyclist on a road with a 60 km/h limit. How much space must you leave?',['At least 0.5 metres','At least 1 metre','At least 1.5 metres'],1,'1 m up to 60 km/h; 1.5 m above 60 km/h.'],
+ ['You come up to a stationary emergency vehicle with flashing lights. What must you do?',['Keep to the speed limit','Slow to 40 km/h and move over if you safely can','Stop until it leaves'],1,'WA SLOMO law: 40 km/h, move over if possible.'],
+ ['When must you dip your high beam?',['Within 200 m of a vehicle in front or an oncoming vehicle','Within 50 m','Only in built-up areas'],0,'High beam not allowed within 200 m.'],
+ ['On red P plates, which is true?',['You may carry any number of passengers','Only 1 passenger at all times (some exemptions), and no driving from midnight to 5 am','No passengers at all'],1,'Tom’s Law and the red P night restriction.']
+];
+/* Diagram specs. Approach angle: S=0, W=90, N=180, E=270 (degrees clockwise). Moves: s straight, l left, r right */
+var WAD = [
+ {type:'T', title:'T-intersection, no signs', cars:[['A',0,'r'],['B',90,'s']], ans:'BA', why:'A is on the road that ends. It gives way to all traffic on the continuing road.'},
+ {type:'T', title:'T-intersection, no signs', cars:[['A',90,'r'],['B',270,'s'],['C',0,'l']], ans:'BAC', why:'A is turning right, so it gives way to oncoming B. C is on the road that ends, so it gives way to both.'},
+ {type:'X', title:'Crossroads, no signs or lights', cars:[['A',0,'s'],['B',270,'s']], ans:'BA', why:'No signs or lights: give way to the vehicle on your right. B is on A’s right.'},
+ {type:'X', title:'Crossroads, no signs or lights', cars:[['A',0,'r'],['B',180,'s']], ans:'BA', why:'A is turning right, so it gives way to oncoming B going straight.'},
+ {type:'X', title:'Stop signs on the north and south roads', stops:[0,180], cars:[['A',0,'s'],['B',90,'s'],['C',270,'r']], ans:'BCA', why:'A faces a stop sign and gives way to both. C is turning right, so it gives way to oncoming B.'},
+ {type:'R', title:'Roundabout', cars:[['A',0,'s'],['B','ring','']], ans:'BA', why:'Give way to vehicles already in the roundabout.'},
+ {type:'X', title:'Traffic lights, both on a green circle', lights:true, cars:[['A',0,'r'],['B',180,'s']], ans:'BA', why:'On a green circle, a right turner gives way to oncoming traffic.'},
+ {type:'T', title:'T-intersection with a pedestrian crossing the side road', ped:true, cars:[['A',90,'r']], ans:'PA', why:'A turning into a road gives way to a pedestrian crossing that road.'}
+];
+
+/* Freund clock items */
+var CLOCK = ['Numbers 1 to 12 all there (no missing or extra)','Numbers drawn inside the circle','Numbers about equally spaced from each other','Numbers about equally spaced from the edge','One hand points to 2','One hand points to 11','Only two hands'];
+
+/* TMT layouts (x,y per 1000 of the sheet box) */
+var TMT = {
+ A:[[341,56,'17'],[570,57,'21'],[936,127,'22'],[46,130,'15'],[490,171,'20'],[657,202,'19'],[145,262,'16'],[373,282,'18'],[756,347,'4'],[460,434,'5'],[862,464,'24'],[126,478,'13'],[612,535,'6'],[67,571,'14'],[372,614,'7'],[677,652,'1'],[142,775,'8'],[733,778,'3'],[325,791,'10'],[458,794,'2'],[207,860,'9'],[944,878,'23'],[817,906,'25'],[402,948,'11'],[61,954,'12']],
+ B:[[925,51,'10'],[658,65,'I'],[130,69,'8'],[277,139,'9'],[755,145,'4'],[878,173,'D'],[449,223,'B'],[261,277,'H'],[611,322,'3'],[214,429,'7'],[517,444,'1'],[59,483,'12'],[681,519,'C'],[158,539,'G'],[834,577,'5'],[874,672,'J'],[358,739,'2'],[686,741,'A'],[155,778,'L'],[549,821,'6'],[766,824,'E'],[908,908,'11'],[289,912,'F'],[53,945,'K']],
+ AS:[[499,609,'1'],[732,150,'2'],[900,640,'3'],[710,494,'4'],[764,727,'5'],[158,747,'6'],[139,348,'7'],[445,304,'8']],
+ BS:[[451,550,'1'],[586,139,'A'],[879,303,'2'],[697,504,'B'],[755,845,'3'],[190,782,'C'],[84,382,'4'],[317,298,'D']]
+};
+
+/* ======================= STATE ======================= */
+function blankState(){ return {v:{}, c:{}, rows:{meds:[{}], stages:[{}]}, ver:1}; }
+var S = blankState();
+var store = null;
+try { store = window.localStorage; store.setItem('__t','1'); store.removeItem('__t'); } catch(e){ store = null; }
+function load(){
+  if (!store) return;
+  try { var raw = store.getItem(KEY); if (raw){ var d = JSON.parse(raw); if (d && d.v) S = Object.assign(blankState(), d); } } catch(e){}
+  if (!S.rows.meds || !S.rows.meds.length) S.rows.meds = [{}];
+  if (!S.rows.stages || !S.rows.stages.length) S.rows.stages = [{}];
+}
+var saveT;
+function save(){
+  clearTimeout(saveT);
+  $('#saveState').textContent = 'Saving…';
+  saveT = setTimeout(function(){
+    if (!store){ $('#saveState').textContent = 'Not saving: export to keep'; return; }
+    try { store.setItem(KEY, JSON.stringify(S)); $('#saveState').textContent = 'Saved on this device'; }
+    catch(e){ $('#saveState').textContent = 'Save failed: export now'; }
+  }, 250);
+}
+function V(k){ var x = S.v[k]; return x == null ? '' : x; }
+function num(k){ var x = parseFloat(S.v[k]); return isNaN(x) ? null : x; }
+
+/* ======================= FIELD RENDERERS ======================= */
+function fld(k, label, opt){
+  opt = opt || {};
+  var w = opt.w ? ' ' + opt.w : '';
+  var inner;
+  if (opt.type === 'area') inner = '<textarea data-k="' + k + '" placeholder="' + esc(opt.ph || '') + '">' + esc(V(k)) + '</textarea>';
+  else if (opt.type === 'sel') inner = '<select data-k="' + k + '"><option value=""></option>' + opt.opts.map(function(o){ return '<option' + (V(k) === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>';
+  else inner = '<input type="' + (opt.type || 'text') + '" data-k="' + k + '" value="' + esc(V(k)) + '"' + (opt.ph ? ' placeholder="' + esc(opt.ph) + '"' : '') + (opt.type === 'number' ? ' inputmode="decimal" step="any"' : '') + '>';
+  return '<label class="f' + w + '"><span>' + esc(label) + '</span>' + inner + '</label>';
+}
+function seg(k, opts){
+  return '<span class="seg" data-seg="' + k + '">' + opts.map(function(o){ return '<button type="button" data-val="' + esc(o) + '"' + (V(k) === o ? ' class="on"' : '') + '>' + esc(o) + '</button>'; }).join('') + '</span>';
+}
+function yn(k, label, opts){ return '<div class="ynrow"><span>' + esc(label) + '</span>' + seg(k, opts || ['Yes','No']) + '</div>'; }
+function sel(k, opts){ return '<select data-k="' + k + '"><option value=""></option>' + opts.map(function(o){ return '<option' + (V(k) === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>'; }
+function inp(k, ph, type){ return '<input type="' + (type || 'text') + '" data-k="' + k + '" value="' + esc(V(k)) + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + (type === 'number' ? ' inputmode="decimal" step="any"' : '') + '>'; }
+function grid(html){ return '<div class="grid">' + html + '</div>'; }
+function timer(id, name, extra){
+  return '<div class="timer" data-timer="' + id + '"><span class="name">' + esc(name) + '</span><span class="clock">0:00.0</span>' +
+    '<button type="button" class="btn go sm" data-t="start">Start</button><button type="button" class="btn sm" data-t="reset">Reset</button>' +
+    '<label class="lab">Seconds ' + inp(id + '_t', '', 'number') + '</label>' + (extra || '') + '<span class="grow"></span><span data-out="' + id + '"></span></div>';
+}
+function errBox(id, lab){ return '<label class="lab">' + (lab || 'Errors') + ' ' + inp(id, '', 'number') + '</label>'; }
+
+/* ======================= FLAGS ======================= */
+var ACU = ['6/4','6/5','6/6','6/7.5','6/9','6/12','6/15','6/18','6/24','6/36','6/60','Worse than 6/60'];
+function acuRank(x){ var i = ACU.indexOf(x); return i < 0 ? null : i; }
+function pill(level, text){ return '<span class="flagpill ' + level + '">' + esc(text) + '</span>'; }
+function flagsFor(sec){
+  var f = [];
+  if (sec === 's1'){
+    if (V('lic_seen') === 'No') f.push(['bad','Licence or permit not sighted']);
+    if (V('med_clear') === 'No') f.push(['bad','No medical clearance sighted']);
+    var ad = adsesTotal(); if (ad != null) f.push(['ok','ADSES total ' + ad + ' / 120']);
+  }
+  if (sec === 's2'){
+    var both = acuRank(V('va_cb')) != null ? acuRank(V('va_cb')) : acuRank(V('va_ub'));
+    var best = [V('va_cr'),V('va_cl'),V('va_cb'),V('va_ur'),V('va_ul'),V('va_ub')].map(acuRank).filter(function(x){ return x != null; });
+    var bestEye = [V('va_cr'),V('va_cl'),V('va_ur'),V('va_ul')].map(acuRank).filter(function(x){ return x != null; });
+    if (best.length){
+      var b = Math.min.apply(null, best);
+      if (b <= 5) f.push(['ok','Acuity meets 6/12 (best ' + ACU[b] + ')']);
+      else f.push(['bad','Acuity worse than 6/12 (best ' + ACU[b] + '): below private standard, do not go on-road, refer']);
+    }
+    if (bestEye.length && Math.min.apply(null, bestEye) > 8) f.push(['bad','Better eye worse than 6/24: below the absolute floor']);
+    var q = ['vf_rr_u','vf_rr_l','vf_rl_u','vf_rl_l','vf_lr_u','vf_lr_l','vf_ll_u','vf_ll_l'];
+    if (q.some(function(k){ return V(k) === 'Reduced'; })) f.push(['bad','Field loss on confrontation: refer for formal perimetry']);
+    else if (q.every(function(k){ return V(k) === 'Full'; })) f.push(['ok','Fields full to confrontation (screen only)']);
+    ['strab','nyst'].forEach(function(k){ if (V(k) === 'Present') f.push(['warn', (k === 'strab' ? 'Strabismus' : 'Nystagmus') + ' present: consider referral']); });
+    if (V('pursuit') === 'No' || V('sacc') === 'No') f.push(['warn','Eye movements not smooth and accurate']);
+    if (V('hear_follow') === 'No') f.push(['warn','Did not reliably follow verbal instructions']);
+  }
+  if (sec === 's3'){
+    var reduced = PHYS.filter(function(j){ return /Reduced|Unable/.test(V('rom_' + j[0] + '_R') + V('rom_' + j[0] + '_L')); }).map(function(j){ return j[1]; });
+    if (reduced.length) f.push(['warn','Reduced range: ' + reduced.join(', ')]);
+    var weak = PHYS.filter(function(j){ var r = num('str_' + j[0] + '_R'), l = num('str_' + j[0] + '_L'); return (r != null && r < 4) || (l != null && l < 4); }).map(function(j){ return j[1]; });
+    if (weak.length) f.push(['warn','Strength under 4/5: ' + weak.join(', ')]);
+    ['R','L'].forEach(function(s){
+      var taps = num('hp_taps_' + s), t = num('hp_time_' + s);
+      if (taps != null && t != null){
+        if (taps >= 15 && t < 9) f.push(['ok','Heel pivot ' + s + ': ' + taps + ' taps in ' + t + ' s']);
+        else f.push(['warn','Heel pivot ' + s + ': ' + taps + ' taps in ' + t + ' s (target 15 in under 9 s)']);
+      }
+    });
+    if (V('accbrake') === 'No') f.push(['warn','Accelerator and brake sequence not accurate']);
+    if (V('prop_ul') === 'Impaired' || V('prop_ll') === 'Impaired') f.push(['warn','Proprioception impaired']);
+    var p = num('pain'); if (p != null && p >= 4) f.push(['warn','Pain ' + p + '/10: may build over the drive']);
+  }
+  if (sec === 's4'){
+    var a = num('tmtA_t'); if (a != null) f.push(a > 78 ? ['warn','TMT A ' + a + ' s: deficient range (over 78 s)'] : ['ok','TMT A ' + a + ' s']);
+    var bt = num('tmtB_t'), be = num('tmtB_e') || 0;
+    if (bt != null) f.push(bt > 180 || be > 1 ? ['bad','TMT B ' + bt + ' s, ' + be + ' errors: over the 180 s / 1 error driving threshold'] : ['ok','TMT B ' + bt + ' s, ' + be + ' errors: within threshold']);
+    var c = clockScore(); if (c != null) f.push(c <= 4 ? ['warn','Clock ' + c + '/7: at or below the 4/7 cut-off'] : ['ok','Clock ' + c + '/7']);
+    var m = num('maze_t'), me = num('maze_e') || 0;
+    if (m != null) f.push(m > 100 || me > 1 ? ['warn','Drive Home Maze ' + m + ' s, ' + me + ' errors: watch closely on-road'] : ['ok','Drive Home Maze ' + m + ' s, ' + me + ' errors']);
+    var sg = num('snell_t'), se = num('snell_e') || 0;
+    if (sg != null) f.push(sg > 60 || se >= 2 ? ['warn','Snellgrove ' + sg + ' s, ' + se + ' errors: flag'] : ['ok','Snellgrove ' + sg + ' s, ' + se + ' errors']);
+    var ol = num('bells_ol'), or = num('bells_or');
+    if (ol != null || or != null){
+      var tot = (ol || 0) + (or || 0);
+      if ((ol || 0) >= 6 || (or || 0) >= 6) f.push(['bad','Bells: 6 or more omissions on one side, possible neglect']);
+      else if (tot > 3) f.push(['warn','Bells: ' + tot + ' omissions, possible attention deficit']);
+      else f.push(['ok','Bells: ' + tot + ' omissions (' + (35 - tot) + ' / 35 found)']);
+    }
+    var ds = num('ds_score');
+    if (ds != null){
+      if (V('ds_ver') === 'Original /128') f.push(ds <= 76 ? ['bad','DriveSafe ' + ds + '/128: lower range'] : ds <= 95 ? ['warn','DriveSafe ' + ds + '/128: middle range'] : ['ok','DriveSafe ' + ds + '/128: upper range']);
+      else f.push(['na','DriveSafe ' + ds + (V('ds_ver') ? ' (' + V('ds_ver') + ')' : '') + ': use the app’s bands']);
+    }
+    var mo = num('moca'); if (mo != null) f.push(mo < 25 ? ['warn','MoCA ' + mo + '/30: under 25'] : ['ok','MoCA ' + mo + '/30']);
+    var ac = num('ace'); if (ac != null) f.push(ac >= 31 && ac <= 66 ? ['bad','ACE ' + ac + '/100: in the 31 to 66 range'] : ['ok','ACE ' + ac + '/100']);
+  }
+  if (sec === 's5'){
+    var w = waScore(); if (w.done) f.push([w.wq + w.wd >= w.tq + w.td ? 'ok' : 'warn', 'WA screen: written ' + w.wq + '/' + w.tq + ', diagrams ' + w.wd + '/' + w.td]);
+    if (w.missed.length) f.push(['warn','Missed: ' + w.missed.join('; ')]);
+  }
+  if (sec === 's6'){
+    var ng = SECTIONS[5].nogo.filter(function(_, i){ return S.c['nogo_' + i]; });
+    if (ng.length) f.push(['bad','Do not go on-road: ' + ng.join(' ')]);
+    if (V('decision')) f.push([V('decision') === 'Proceed' ? 'ok' : V('decision') === 'Do not proceed' ? 'bad' : 'warn', 'Decision: ' + V('decision')]);
+  }
+  if (sec === 's7'){
+    var tv = 0, tp = 0; S.rows.stages.forEach(function(r){ tv += r.v || 0; tp += r.p || 0; });
+    if (tv || tp) f.push([tp ? 'bad' : tv > 5 ? 'warn' : 'ok', 'Interventions: ' + tv + ' verbal, ' + tp + ' physical']);
+    var un = ONROAD.filter(function(a){ return V('or_' + a[0]) === 'Unsafe'; }).map(function(a){ return a[1]; });
+    if (un.length) f.push(['bad','Unsafe: ' + un.join(', ')]);
+    var mi = ONROAD.filter(function(a){ return V('or_' + a[0]) === 'Minor issues'; }).map(function(a){ return a[1]; });
+    if (mi.length) f.push(['warn','Minor issues: ' + mi.join(', ')]);
+  }
+  return f;
+}
+function adsesTotal(){ var t = 0, any = false; for (var i = 1; i <= 12; i++){ var x = num('adses_' + i); if (x != null){ t += x; any = true; } } return any ? t : null; }
+function clockScore(){ var any = false, t = 0; CLOCK.forEach(function(_, i){ var x = V('clk_' + i); if (x){ any = true; if (x === 'Yes') t++; } }); return any ? t : null; }
+function waScore(){
+  var wq = 0, wd = 0, done = false, missed = [];
+  WAQ.forEach(function(q, i){ var a = V('waq_' + i); if (a !== ''){ done = true; if (+a === q[2]) wq++; else missed.push('Q' + (i + 1)); } });
+  WAD.forEach(function(d, i){ var a = norm(V('wad_' + i)); if (a){ done = true; if (a === d.ans) wd++; else missed.push('Diagram ' + (i + 1)); } });
+  return {wq:wq, wd:wd, tq:WAQ.length, td:WAD.length, done:done, missed:missed};
+}
+function norm(s){ return String(s || '').toUpperCase().replace(/[^A-Z]/g, ''); }
+function refreshFlags(){
+  $$('[data-flags]').forEach(function(el){
+    var sec = el.getAttribute('data-flags');
+    var list = sec === 'all' ? ['s1','s2','s3','s4','s5'].reduce(function(a, s){ return a.concat(flagsFor(s).filter(function(x){ return x[0] !== 'ok' && x[0] !== 'na'; }).map(function(x){ return [x[0], 'S' + s.slice(1) + '  ' + x[1]]; })); }, []) : flagsFor(sec);
+    el.innerHTML = list.map(function(x){ return '<div>' + pill(x[0], x[1]) + '</div>'; }).join('') || (sec === 'all' ? '<div class="note">No concerns flagged yet from sections 1 to 5.</div>' : '');
+  });
+  var o = {
+    tmtA: num('tmtA_t') != null ? (num('tmtA_t') > 78 ? pill('warn','Over 78 s') : pill('ok','OK')) : '',
+    tmtB: num('tmtB_t') != null ? ((num('tmtB_t') > 180 || (num('tmtB_e') || 0) > 1) ? pill('bad','Over threshold') : pill('ok','Within threshold')) : '',
+    maze: num('maze_t') != null ? ((num('maze_t') > 100 || (num('maze_e') || 0) > 1) ? pill('warn','Flag') : pill('ok','OK')) : '',
+    snell: num('snell_t') != null ? ((num('snell_t') > 60 || (num('snell_e') || 0) >= 2) ? pill('warn','Flag') : pill('ok','OK')) : '',
+    bells: '', adses: adsesTotal() != null ? '<span class="out">' + adsesTotal() + ' / 120</span>' : '',
+    clock: clockScore() != null ? '<span class="out">' + clockScore() + ' / 7</span>' : '',
+    wa: (function(){ var w = waScore(); return w.done ? '<span class="out">Written ' + w.wq + '/' + w.tq + ' · Diagrams ' + w.wd + '/' + w.td + '</span>' : ''; })(),
+    hp_R: hpOut('R'), hp_L: hpOut('L')
+  };
+  $$('[data-out]').forEach(function(el){ var k = el.getAttribute('data-out'); if (k in o) el.innerHTML = o[k]; });
+  // WA marks
+  $$('.q[data-q]').forEach(function(el){
+    var i = +el.getAttribute('data-q'), a = V('waq_' + i);
+    el.querySelector('.res').innerHTML = a === '' ? '' : (+a === WAQ[i][2] ? pill('ok','Correct') : pill('bad','Incorrect'));
+  });
+  $$('[data-dres]').forEach(function(el){
+    var i = +el.getAttribute('data-dres'), a = norm(V('wad_' + i));
+    el.innerHTML = a ? (a === WAD[i].ans ? pill('ok','Correct') : pill('bad','Incorrect')) : '';
+  });
+  // stage totals
+  var tv = 0, tp = 0; S.rows.stages.forEach(function(r){ tv += r.v || 0; tp += r.p || 0; });
+  var tt = $('#stageTot'); if (tt) tt.textContent = tv + ' verbal · ' + tp + ' physical';
+  renderNav();
+  updateWho();
+}
+function hpOut(s){ var a = num('hp_taps_' + s), t = num('hp_time_' + s); if (a == null || t == null) return ''; return (a >= 15 && t < 9) ? pill('ok','OK') : pill('warn','Below target'); }
+
+/* ======================= SECTION RECORDS ======================= */
+var PHYS = [['sh','Shoulder'],['el','Elbow'],['fa','Forearm'],['wr','Wrist'],['fi','Fingers and grip'],['hip','Hip'],['kn','Knee'],['an','Ankle'],['tr','Trunk rotation'],['nk','Neck rotation']];
+var COORD = [['fn','Finger to nose'],['ff','Finger to finger'],['ps','Pronation and supination'],['wt','Wrist tapping'],['to','Thumb opposition'],['fr','Foot rotation'],['ft','Foot tapping']];
+var ONROAD = [['ob','Observation and scanning'],['ind','Indicator use'],['spa','Speed of approach to hazards and turns'],['sp','Speed regulation'],['gs','Gap selection'],['lp','Lane position'],['tp','Turning position'],['vc','Vehicle control (steering, pedals)'],['hz','Hazard response'],['dir','Following directions'],['man','Manoeuvres'],['ra','Roundabouts'],['tl','Traffic lights and signs']];
+
+function recordS1(){
+  var h = '<h3>Licence and clearance</h3>' + grid(
+    fld('lic_no','Licence or permit number',{w:'h3c'}) + fld('lic_class','Class and type',{w:'h3c',ph:'eg C, learner’s permit'}) + fld('lic_exp','Expiry',{w:'h3c',type:'date'}) +
+    fld('lic_cond','Conditions',{ph:'eg corrective lenses, automatic only'})) +
+    yn('lic_seen','Licence or permit sighted') + yn('med_clear','Medical clearance or GP letter sighted',['Yes','No','Not needed']) +
+    '<h3>Health</h3>' + grid(
+    fld('dx','Presenting condition or diagnosis',{type:'area'}) + fld('medhx','Medical history',{type:'area'}) + fld('symptoms','Current symptoms and functional challenges',{type:'area'})) +
+    '<h3>Medications</h3><table class="rec"><thead><tr><th>Name</th><th>Dose and frequency</th><th>Taken today at</th><th>Purpose</th><th>Side effects</th><th class="noprint"></th></tr></thead><tbody>' +
+    S.rows.meds.map(function(r, i){ return '<tr>' + ['name','dose','time','purpose','fx'].map(function(c){ return '<td><input type="text" data-row="meds" data-i="' + i + '" data-c="' + c + '" value="' + esc(r[c] || '') + '"></td>'; }).join('') + '<td class="noprint"><button type="button" class="btn sm" data-delrow="meds" data-i="' + i + '" aria-label="Remove">✕</button></td></tr>'; }).join('') +
+    '</tbody></table><div class="btnrow"><button type="button" class="btn sm" data-addrow="meds">Add medication</button></div>' +
+    '<h3>Driving history</h3>' + grid(
+    fld('drv_years','Permit or licence held for',{w:'h3c'}) + fld('drv_hours','Logbook hours (day / night)',{w:'h3c'}) + fld('drv_car','Car used',{w:'h3c',ph:'eg auto Toyota'}) +
+    fld('drv_lessons','Previous lessons and assessments',{type:'area'}) + fld('drv_incidents','Crashes, near misses, infringements',{type:'area'})) +
+    '<h3>Driving needs</h3><table class="rec"><tbody>' + [['day','Day time'],['night','Night time'],['metro','Metropolitan'],['country','Country'],['traffic','Traffic density'],['familiar','Familiarity'],['dist','Distances'],['roads','Types of roads'],['comm','Commercial use']].map(function(r){ return '<tr><td style="width:34%">' + r[1] + '</td><td>' + inp('need_' + r[0]) + '</td></tr>'; }).join('') + '</tbody></table>' +
+    grid(fld('why','Why driving matters to them',{type:'area'}) + fld('hard','What is hard now, what they do well',{type:'area'}) + fld('expect','Expectations of today',{type:'area'}) + fld('social','Living, work and study',{type:'area'})) +
+    '<h3>Neurodivergent and regulation</h3>' + grid(
+    fld('sensory','Sensory load in a car',{type:'area'}) + fld('regulate','What helps them regulate',{type:'area'}) +
+    fld('anx','Driving anxiety (0 to 10)',{w:'h3c',type:'number'}) + fld('sleep','Sleep last night (hours)',{w:'h3c',type:'number'}) + fld('food','Eaten today',{w:'h3c',type:'sel',opts:['Yes','No','Small amount']}) +
+    fld('medtime','Medication timing against the drive',{ph:'eg stimulant 7 am, drive at 2.30 pm'})) +
+    '<h3>ADSES (enter item scores 0 to 10 from the scale sheet)</h3><div class="grid">' +
+    [1,2,3,4,5,6,7,8,9,10,11,12].map(function(i){ return fld('adses_' + i, 'Item ' + i, {w:'h1c', type:'number'}); }).join('') +
+    '</div><p>Total: <span data-out="adses"></span></p>';
+  return h;
+}
+function recordS2(){
+  var acuRow = function(lbl, p){ return '<tr><td>' + lbl + '</td>' + ['r','l','b'].map(function(e){ return '<td>' + sel('va_' + p + e, ACU) + '</td>'; }).join('') + '</tr>'; };
+  var vf = function(eye, lbl){ return '<tr><td>' + lbl + '</td>' + ['r_u','r_l','l_u','l_l'].map(function(q){ return '<td>' + sel('vf_' + eye + q, ['Full','Reduced']) + '</td>'; }).join('') + '</tr>'; };
+  return '<h3>Hearing and communication</h3>' + yn('hear_aids','Wearing hearing aids') + yn('hear_follow','Follows verbal instructions') + yn('comm_issue','Communication issues seen') + grid(fld('hear_note','Comments',{type:'area'})) +
+    '<h3>Visual history</h3>' + yn('glasses','Glasses or contacts for driving') + yn('endorsed','Corrective lenses endorsed on licence',['Yes','No','N/A']) +
+    grid(fld('eye_last','Last eye test (who, when)',{w:'h2c'}) + fld('eye_tx','Eye treatments',{w:'h2c'}) + fld('eye_sx','Symptoms (blur, double, missing areas, flashes)',{type:'area'})) +
+    '<h3>Visual acuity</h3>' + grid(fld('va_dist','Chart distance',{w:'h2c',type:'sel',opts:['6 m','3 m chart']}) + fld('va_by','Tested by',{w:'h2c',type:'sel',opts:['OT','Optometrist','Doctor']})) +
+    '<table class="rec" style="margin-top:10px"><thead><tr><th></th><th>Right</th><th>Left</th><th>Both</th></tr></thead><tbody>' + acuRow('Uncorrected','u') + acuRow('Corrected','c') + '</tbody></table>' +
+    '<h3>Visual fields (confrontation)</h3><table class="rec"><thead><tr><th></th><th>Right field upper</th><th>Right field lower</th><th>Left field upper</th><th>Left field lower</th></tr></thead><tbody>' + vf('r','Right eye') + vf('l','Left eye') + '</tbody></table>' +
+    '<h3>Eye movements and other</h3>' + yn('pursuit','Slow pursuits smooth and accurate') + yn('sacc','Saccades smooth and accurate (horizontal, vertical, near to far)') +
+    yn('strab','Strabismus',['Present','Not present']) + yn('nyst','Nystagmus',['Present','Not present']) + yn('colour','Colour vision issues',['Reported','Not reported']) + yn('contrast','Contrast or glare issues',['Reported','Not reported']) + yn('cataract','Cataract',['Reported','Not reported']) + yn('glauc','Glaucoma',['Reported','Not reported']) + yn('inatt','Visual inattention',['Reported','Not reported']) +
+    '<h3>Outcome</h3>' + yn('vis_std','Meets Austroads private vehicle standard',['Yes','No','Unsure']) + yn('vis_refer','Refer to optometrist or ophthalmologist');
+}
+function recordS3(){
+  var oxf = ['5','4','3+','3','2','1','0'];
+  return yn('hand','Hand dominance',['Left','Right']) +
+    '<h3>Range of movement and strength</h3><table class="rec"><thead><tr><th></th><th>ROM right</th><th>ROM left</th><th>Strength R</th><th>Strength L</th></tr></thead><tbody>' +
+    PHYS.map(function(j){ return '<tr><td>' + j[1] + '</td><td>' + sel('rom_' + j[0] + '_R',['WFL','Reduced','Unable']) + '</td><td>' + sel('rom_' + j[0] + '_L',['WFL','Reduced','Unable']) + '</td><td>' + sel('str_' + j[0] + '_R', oxf) + '</td><td>' + sel('str_' + j[0] + '_L', oxf) + '</td></tr>'; }).join('') +
+    '</tbody></table><p class="note">WFL: within functional limits. Strength on the Oxford scale (0 to 5).</p>' +
+    grid(fld('tone','Tone or spasticity',{w:'h2c'}) + fld('pain','Pain (0 to 10)',{w:'h1c',type:'number'}) + fld('pain_where','Where',{w:'h3c'}) + fld('reaction','Reaction time (upper and lower limb)',{w:'h2c'}) + fld('balance','Balance, mobility, transfers',{w:'h2c'})) +
+    '<h3>Coordination</h3><table class="rec"><thead><tr><th></th><th>Right</th><th>Left</th></tr></thead><tbody>' +
+    COORD.map(function(c){ return '<tr><td>' + c[1] + '</td><td>' + sel('co_' + c[0] + '_R',['Normal','Impaired']) + '</td><td>' + sel('co_' + c[0] + '_L',['Normal','Impaired']) + '</td></tr>'; }).join('') + '</tbody></table>' +
+    '<h3>Heel pivot (15 taps side to side, under 9 s)</h3><table class="rec"><thead><tr><th></th><th>Taps</th><th>Seconds</th><th></th></tr></thead><tbody>' +
+    ['R','L'].map(function(s){ return '<tr><td>' + (s === 'R' ? 'Right' : 'Left') + ' foot</td><td>' + inp('hp_taps_' + s,'','number') + '</td><td>' + inp('hp_time_' + s,'','number') + '</td><td data-out="hp_' + s + '"></td></tr>'; }).join('') + '</tbody></table>' +
+    yn('accbrake','Accelerator and brake sequence accurate') + yn('prop_ul','Proprioception, upper limb',['Intact','Impaired']) + yn('prop_ll','Proprioception, lower limb',['Intact','Impaired']) +
+    grid(fld('phys_sum','Summary of physical skills for driving',{type:'area'}));
+}
+function recordS4(){
+  return '<h3>Timed tasks</h3>' +
+    timer('tmtA','Trail Making A', errBox('tmtA_e')) + timer('tmtB','Trail Making B', errBox('tmtB_e')) +
+    timer('maze','OT Drive Home Maze', errBox('maze_e')) + timer('snell','Snellgrove Maze', errBox('snell_e')) +
+    timer('bells','Bells test', errBox('bells_ol','Omissions left') + errBox('bells_or','Omissions right')) +
+    yn('bells_scan','Bells scanning pattern',['Organised','Disorganised']) + yn('helped','Any help given after timing started',['No','Yes']) +
+    '<h3>Clock drawing (Freund, 7 items)</h3><table class="rec"><tbody>' + CLOCK.map(function(c, i){ return '<tr><td>' + (i + 1) + '. ' + c + '</td><td style="width:160px">' + seg('clk_' + i, ['Yes','No']) + '</td></tr>'; }).join('') + '</tbody></table><p>Score: <span data-out="clock"></span></p>' +
+    '<h3>DriveSafe, DriveAware and other</h3>' + grid(fld('ds_ver','DriveSafe version',{w:'h2c',type:'sel',opts:['iPad /84','Original /128']}) + fld('ds_score','DriveSafe score',{w:'h2c',type:'number'}) +
+    fld('ds_obs','DriveSafe notes (objects missed, detail, consistency, left and right)',{type:'area'}) +
+    fld('da_score','DriveAware score',{w:'h2c',type:'number'}) + fld('da_gap','DriveAware: where client and OT ratings differ',{w:'h2c'}) +
+    fld('moca','MoCA (if used) /30',{w:'h2c',type:'number'}) + fld('ace','ACE (if used) /100',{w:'h2c',type:'number'}) +
+    fld('cog_gen','General cognitive observations (alertness, attention, memory, following instructions)',{type:'area'}) + fld('cog_sum','Summary of cognitive skills for driving',{type:'area'}));
+}
+function recordS5(showKey){
+  var h = '<div class="btnrow noprint" style="margin-top:0"><button type="button" class="btn" id="keyBtn">' + (showKey ? 'Hide answer key' : 'Show answer key') + '</button><button type="button" class="btn" data-go="print">Print the client copy</button></div>' +
+    '<p>Score: <span data-out="wa"></span></p><div' + (showKey ? ' class="key"' : '') + '><h3>Written questions</h3>' +
+    WAQ.map(function(q, i){ return '<div class="q" data-q="' + i + '"><span class="res"></span><b>' + (i + 1) + '. ' + esc(q[0]) + '</b><div class="opts">' +
+      q[1].map(function(o, j){ return '<label' + (j === q[2] ? ' class="ans"' : '') + '><input type="radio" name="waq_' + i + '" data-k="waq_' + i + '" value="' + j + '"' + (V('waq_' + i) !== '' && +V('waq_' + i) === j ? ' checked' : '') + '> <span>' + 'abc'[j] + '. ' + esc(o) + '</span></label>'; }).join('') +
+      '</div><div class="why">' + esc(q[3]) + '</div></div>'; }).join('') +
+    '<h3>Intersection diagrams</h3><p class="note">Type the order the client wrote, eg BAC. P is the pedestrian.</p><div class="diag">' +
+    WAD.map(function(d, i){ return '<figure>' + diagram(d, i) + '<figcaption><b>' + (i + 1) + '. ' + esc(d.title) + '</b><div style="display:flex;gap:8px;align-items:center;margin-top:6px">' + inp('wad_' + i, 'Client order') + '<span data-dres="' + i + '"></span></div>' + (showKey ? '<div class="note" style="color:var(--good);margin-top:6px">Answer ' + d.ans.split('').join(', ') + '. ' + esc(d.why) + '</div>' : '') + '</figcaption></figure>'; }).join('') +
+    '</div></div>';
+  return h;
+}
+function recordS6(){
+  var areas = [['vis','Visual'],['phys','Physical'],['cog','Cognitive'],['psy','Psychosocial'],['hist','Driving history']];
+  return '<h3>Flags from sections 1 to 5</h3><div class="flags" data-flags="all"></div>' +
+    '<h3>Do not go on-road if (tick any that apply)</h3><ul class="list-check">' + SECTIONS[5].nogo.map(function(t, i){ return '<li><input type="checkbox" data-chk="nogo_' + i + '"' + (S.c['nogo_' + i] ? ' checked' : '') + '><span>' + esc(t) + '</span></li>'; }).join('') + '</ul>' +
+    '<h3>Pre-drive outcome summary</h3><table class="rec"><thead><tr><th>Area</th><th>Issues</th><th>Possible impact on-road</th><th>Look for on-road</th></tr></thead><tbody>' +
+    areas.map(function(a){ return '<tr><td>' + a[1] + '</td>' + ['i','p','c'].map(function(c){ return '<td><textarea data-k="sum_' + a[0] + '_' + c + '" style="min-height:64px">' + esc(V('sum_' + a[0] + '_' + c)) + '</textarea></td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>' +
+    '<h3>Decision</h3>' + yn('decision','Today',['Proceed','Proceed with changes','Do not proceed']) + grid(fld('dec_why','Reason and any changes',{type:'area'}));
+}
+function recordS7(){
+  return '<h3>Conditions</h3>' + grid(
+    fld('or_vehicle','Vehicle',{w:'h3c',ph:'eg dual-control auto'}) + fld('or_mdi','Instructor',{w:'h3c'}) + fld('or_weather','Weather and road surface',{w:'h3c'}) +
+    fld('or_start','Start',{w:'h3c',type:'time'}) + fld('or_end','Finish',{w:'h3c',type:'time'}) + fld('or_meds','Time since medication',{w:'h3c'}) +
+    fld('or_area','Area and speed zones covered') + fld('or_adjust','Seat, mirror, steering, head rest adjustments')) +
+    '<h3>Route stage log</h3><table class="rec"><thead><tr><th>Stage and location</th><th>Speed zone</th><th>What happened</th><th>V</th><th>P</th><th class="noprint"></th></tr></thead><tbody>' +
+    S.rows.stages.map(function(r, i){ return '<tr><td><input type="text" data-row="stages" data-i="' + i + '" data-c="loc" value="' + esc(r.loc || '') + '"></td><td style="width:90px"><input type="text" data-row="stages" data-i="' + i + '" data-c="zone" value="' + esc(r.zone || '') + '"></td><td><textarea data-row="stages" data-i="' + i + '" data-c="obs" style="min-height:56px">' + esc(r.obs || '') + '</textarea></td>' +
+      ['v','p'].map(function(c){ return '<td style="width:112px"><span class="tally"><button type="button" class="btn sm noprint" data-tal="' + c + '" data-i="' + i + '" data-d="-1">−</button><b>' + (r[c] || 0) + '</b><button type="button" class="btn sm noprint" data-tal="' + c + '" data-i="' + i + '" data-d="1">+</button></span></td>'; }).join('') +
+      '<td class="noprint"><button type="button" class="btn sm" data-delrow="stages" data-i="' + i + '" aria-label="Remove">✕</button></td></tr>'; }).join('') +
+    '</tbody></table><div class="btnrow"><button type="button" class="btn sm" data-addrow="stages">Add stage</button><span class="note" style="align-self:center">Total: <b id="stageTot"></b></span></div>' +
+    '<h3>Performance</h3><table class="rec"><thead><tr><th>Area</th><th>Rating</th><th>Notes</th></tr></thead><tbody>' +
+    ONROAD.map(function(a){ return '<tr><td>' + a[1] + '</td><td style="width:190px">' + sel('or_' + a[0], ['Safe','Minor issues','Unsafe','Not seen']) + '</td><td>' + inp('orn_' + a[0]) + '</td></tr>'; }).join('') + '</tbody></table>' +
+    '<h3>Michon levels</h3>' + grid(fld('mi_str','Strategic (planning, route, choosing when to drive)',{type:'area'}) + fld('mi_tac','Tactical (gaps, speed, hazards, merging)',{type:'area'}) + fld('mi_op','Operational (control, steering, pedals, lane)',{type:'area'})) +
+    yn('or_stopped','Drive ended early for safety',['No','Yes']);
+}
+function recordS8(){
+  return '<h3>Outcome</h3>' + grid(
+    fld('out_rec','Recommendation',{type:'sel',opts:['Continue learning with an OT-informed instructor','Specialised lessons then re-assess','Ready for the PDA','Fit to drive','Fit to drive with conditions','Not fit to drive at this time','Further assessment or referral needed']}) +
+    fld('out_lessons','Lessons recommended (number and frequency)',{w:'h2c'}) + fld('out_reax','Re-assessment',{w:'h2c',ph:'eg after 10 lessons'}) +
+    fld('out_cond','Conditions or modifications',{w:'h2c'}) + fld('out_ref','Referrals',{w:'h2c'}) +
+    fld('out_to','Report goes to',{w:'h2c'}) + fld('out_due','Report due',{w:'h2c',type:'date'})) +
+    '<h3>After the client leaves</h3><ul class="list-check">' + ['Dash cam footage backed up to the client file','Clinical reasoning written up today','Report started in the report builder','Invoice or NDIS claim done','Referrer updated'].map(function(t, i){ return '<li><input type="checkbox" data-chk="after_' + i + '"' + (S.c['after_' + i] ? ' checked' : '') + '><span>' + t + '</span></li>'; }).join('') + '</ul>';
+}
+var RECORD = {s1:recordS1, s2:recordS2, s3:recordS3, s4:recordS4, s5:function(){ return recordS5(S._key); }, s6:recordS6, s7:recordS7, s8:recordS8};
+
+/* ======================= DIAGRAMS ======================= */
+function rot(x, y, deg){ var r = deg * Math.PI / 180, dx = x - 120, dy = y - 120; return [120 + dx * Math.cos(r) - dy * Math.sin(r), 120 + dx * Math.sin(r) + dy * Math.cos(r)]; }
+function diagram(d, idx, print){
+  var road = '#5f5e5a', line = '#fff', g = '';
+  g += '<rect x="0" y="0" width="240" height="240" fill="#dfe8d6"/>';
+  if (d.type === 'X' || d.type === 'R'){
+    g += '<rect x="0" y="90" width="240" height="60" fill="' + road + '"/><rect x="90" y="0" width="60" height="240" fill="' + road + '"/>';
+    g += '<path d="M0 120H88M152 120H240M120 0V88M120 152V240" stroke="' + line + '" stroke-width="2" stroke-dasharray="8 7"/>';
+  }
+  if (d.type === 'T'){
+    g += '<rect x="0" y="90" width="240" height="60" fill="' + road + '"/><rect x="90" y="150" width="60" height="90" fill="' + road + '"/>';
+    g += '<path d="M0 120H240M120 152V240" stroke="' + line + '" stroke-width="2" stroke-dasharray="8 7"/>';
+  }
+  if (d.type === 'R'){
+    g += '<circle cx="120" cy="120" r="44" fill="' + road + '"/><circle cx="120" cy="120" r="18" fill="#cfdcc4" stroke="#fff" stroke-width="2"/>';
+  }
+  if (d.stops) d.stops.forEach(function(a){ var p = rot(76, 168, a); g += '<g transform="translate(' + p[0] + ',' + p[1] + ')"><polygon points="-9,-4 -4,-9 4,-9 9,-4 9,4 4,9 -4,9 -9,4" fill="#c8102e" stroke="#fff" stroke-width="1"/><text x="0" y="2.6" font-size="5.6" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial">STOP</text></g>'; var sl = rot(90, 153, a), sl2 = rot(120, 153, a); g += '<line x1="' + sl[0] + '" y1="' + sl[1] + '" x2="' + sl2[0] + '" y2="' + sl2[1] + '" stroke="#fff" stroke-width="3"/>'; });
+  if (d.lights) [0,90,180,270].forEach(function(a){ var p = rot(78, 160, a); g += '<g transform="translate(' + p[0] + ',' + p[1] + ')"><rect x="-4" y="-11" width="8" height="22" rx="2" fill="#222"/><circle cx="0" cy="-6" r="2.4" fill="#444"/><circle cx="0" cy="0" r="2.4" fill="#444"/><circle cx="0" cy="6" r="2.6" fill="#2ecc71"/></g>'; });
+  if (d.ped){
+    g += pedIcon(143, 172);
+    g += '<path d="M134 172 H98" stroke="#111" stroke-width="1.6" stroke-dasharray="3 2" fill="none" marker-end="url(#ah' + idx + ')"/>';
+    g += label('P', 166, 176);
+  }
+  d.cars.forEach(function(c){
+    var name = c[0], a = c[1], mv = c[2];
+    if (a === 'ring'){
+      // car inside the roundabout, west side, circulating clockwise (heading north)
+      g += '<g transform="translate(84,124) rotate(0)"><rect x="-6" y="-10" width="12" height="20" rx="3" fill="#2f6f9e" stroke="#111" stroke-width="1"/><rect x="-4.5" y="-8" width="9" height="5" rx="1" fill="#cfe6f5"/></g>';
+      g += '<path d="M84 110 A36 36 0 0 1 106 87" stroke="#111" stroke-width="1.8" fill="none" marker-end="url(#ah' + idx + ')"/>';
+      g += label(name, 70, 140);
+      return;
+    }
+    var p = rot(105, 196, a);
+    var col = name === 'A' ? '#ab5c95' : name === 'B' ? '#2f6f9e' : '#2ca5b8';
+    g += '<g transform="translate(' + p[0] + ',' + p[1] + ') rotate(' + a + ')"><rect x="-7" y="-12" width="14" height="24" rx="3" fill="' + col + '" stroke="#111" stroke-width="1"/><rect x="-5" y="-10" width="10" height="6" rx="1" fill="#e8f3fb"/></g>';
+    var path;
+    if (d.type === 'R') path = 'M105 180 L105 168';
+    else if (mv === 's') path = 'M105 180 L105 66';
+    else if (mv === 'r') path = 'M105 180 L105 138 Q105 105 138 105 L176 105';
+    else path = 'M105 180 L105 152 Q105 135 88 135 L64 135';
+    var pts = path.match(/-?\d+(\.\d+)?/g).map(Number), out = [], k = 0;
+    var cmd = path.replace(/-?\d+(\.\d+)?/g, function(){ return '@'; });
+    for (var i = 0; i < pts.length; i += 2){ var r2 = rot(pts[i], pts[i + 1], a); out.push(r2[0].toFixed(1) + ' ' + r2[1].toFixed(1)); }
+    var built = cmd.replace(/@ @/g, function(){ return out[k++]; });
+    g += '<path d="' + built + '" stroke="#111" stroke-width="1.8" fill="none" marker-end="url(#ah' + idx + ')"/>';
+    var lp = rot(84, 206, a);
+    g += label(name, lp[0], lp[1]);
+  });
+  return '<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + esc(d.title) + '"><defs><marker id="ah' + idx + '" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#111"/></marker></defs>' + g + '</svg>';
+}
+function label(t, x, y){ return '<g><circle cx="' + x + '" cy="' + y + '" r="9" fill="#fff" stroke="#111" stroke-width="1.4"/><text x="' + x + '" y="' + (y + 4) + '" font-size="11" font-weight="700" text-anchor="middle" font-family="Arial">' + t + '</text></g>'; }
+function pedIcon(x, y){ return '<g transform="translate(' + x + ',' + y + ')" fill="#111"><circle cx="0" cy="-7" r="2.6"/><rect x="-1.6" y="-4" width="3.2" height="7" rx="1"/><path d="M-1 3 L-3 9 M1 3 L3 9 M-1 -2 L-4 2 M1 -2 L4 2" stroke="#111" stroke-width="1.4"/></g>'; }
+
+/* ======================= VIEWS ======================= */
+var ROUTES = ['overview','day'].concat(SECTIONS.map(function(s){ return s.id; })).concat(['cutoffs','print']);
+var route = 'overview';
+function stepKey(sec, i){ return sec + '_step_' + i; }
+function secProgress(s){ var d = 0; s.steps.forEach(function(_, i){ if (S.c[stepKey(s.id, i)]) d++; }); return [d, s.steps.length]; }
+function renderNav(){
+  var h = '<a href="#overview" data-r="overview"' + (route === 'overview' ? ' class="on"' : '') + '><span class="n">▤</span>Overview</a>' +
+    '<a href="#day" data-r="day"' + (route === 'day' ? ' class="on"' : '') + '><span class="n">◷</span>Day run sheet</a><hr>' +
+    SECTIONS.map(function(s){ var p = secProgress(s), fl = flagsFor(s.id).some(function(x){ return x[0] === 'bad'; });
+      var dot = fl ? 'flag' : p[0] === p[1] ? 'done' : p[0] ? 'part' : '';
+      return '<a href="#' + s.id + '" data-r="' + s.id + '"' + (route === s.id ? ' class="on"' : '') + '><span class="n">' + s.n + '</span>' + esc(s.title.replace(' (WA)','')) + '<span class="dot ' + dot + '"></span></a>'; }).join('') +
+    '<hr><a href="#cutoffs" data-r="cutoffs"' + (route === 'cutoffs' ? ' class="on"' : '') + '><span class="n">!</span>Cut-offs</a>' +
+    '<a href="#print" data-r="print"' + (route === 'print' ? ' class="on"' : '') + '><span class="n">⎙</span>Print kit and data</a>';
+  $('#nav').innerHTML = h;
+}
+function updateWho(){
+  var bits = [V('m_client') ? '<b>' + esc(V('m_client')) + '</b>' : 'OT Driver Assessment Day Pack', V('m_date') ? esc(V('m_date')) : '', V('m_type') ? esc(V('m_type')) : ''].filter(Boolean);
+  $('#who').innerHTML = bits.join(' · ');
+}
+function head(kick, title, extra){ return '<div class="kick">' + kick + '</div><h1>' + esc(title) + '</h1>' + (extra || ''); }
+function viewOverview(){
+  return head('Estus Health · Driving OT', 'OT Driver Assessment Day Pack', '<p class="note" style="margin-top:8px">Run sheets, record forms and notes for the whole day. Everything you type saves in this browser on this device only. Nothing goes online. Export from Print kit to keep a copy in the client file.</p>') +
+    '<h3>Assessment</h3>' + yn('m_type','Type',['Potential to Drive','Medical Fitness to Drive','Re-assessment']) + grid(
+    fld('m_client','Client (initials or ID is fine)',{w:'h2c'}) + fld('m_dob','Date of birth',{w:'h2c',type:'date'}) +
+    fld('m_date','Assessment date',{w:'h2c',type:'date'}) + fld('m_start','Start time',{w:'h2c',type:'time'}) +
+    fld('m_loc','Location',{w:'h2c'}) + fld('m_ref','Referrer',{w:'h2c'}) + fld('m_fund','Funding',{w:'h2c',type:'sel',opts:['NDIS plan managed','NDIS self managed','NDIS agency managed','Private','Insurer','Other']}) + fld('m_ot','OT',{w:'h2c',ph:'Liam Fagan'}) +
+    fld('m_mdi','Driving instructor and vehicle',{w:'h2c'}) + fld('m_due','Report due',{w:'h2c',type:'date'})) +
+    '<h3>Sections</h3><div class="secgrid">' + SECTIONS.map(function(s){ var p = secProgress(s); return '<a href="#' + s.id + '"><div class="lab">Section ' + s.n + ' · ' + s.mins + ' min</div><div class="t">' + esc(s.title) + '</div><div class="prog"><span style="width:' + Math.round(p[0] / p[1] * 100) + '%"></span></div></a>'; }).join('') + '</div>' +
+    '<h3>WA licensing at a glance</h3><ul class="dots">' + WA_LICENCE.map(function(t){ return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>';
+}
+function checklist(prefix, items){ return '<ul class="list-check">' + items.map(function(t, i){ return '<li><input type="checkbox" data-chk="' + prefix + i + '"' + (S.c[prefix + i] ? ' checked' : '') + '><span>' + esc(t) + '</span></li>'; }).join('') + '</ul>'; }
+function viewDay(){
+  return head('The day at a glance', 'Day run sheet', '<div class="meta"><span class="pill">About 3.5 hours</span><span>Times run from the start. Write the actual clock time as you go.</span></div>') +
+    '<h3>Timeline</h3><table class="day"><thead><tr><th>From start</th><th>Length</th><th>Section</th><th>Key tasks</th><th>Actual</th><th>Done</th></tr></thead><tbody>' +
+    DAY.map(function(r, i){ return '<tr><td class="t">' + r[0] + '</td><td>' + (r[1] ? r[1] + ' min' : '') + '</td><td><b>' + (r[4] ? '<a href="#' + r[4] + '">' + esc(r[2]) + '</a>' : esc(r[2])) + '</b></td><td>' + esc(r[3]) + '</td><td>' + inp('day_t' + i, '', 'time') + '</td><td><input class="tick" type="checkbox" data-chk="day_' + i + '"' + (S.c['day_' + i] ? ' checked' : '') + '></td></tr>'; }).join('') + '</tbody></table>' +
+    '<div class="cols"><div><h3>Before the day</h3>' + checklist('before_', BEFORE) + '</div><div><h3>Kit</h3>' + checklist('kit_', KIT) + '</div></div>' +
+    '<div class="say"><span class="lab">How we run the day</span>Tell them the plan. One step at a time. Breaks any time. Explain before you touch, time or change anything. No surprises.</div>';
+}
+function viewSection(s){
+  var tab = S._tab && S._tab[s.id] || 'run';
+  var run = '<h2>Run sheet</h2><ol class="steps">' + s.steps.map(function(st, i){ var k = stepKey(s.id, i); return '<li' + (S.c[k] ? ' class="done"' : '') + '><div><b>' + esc(st[0]) + '.</b> ' + esc(st[1]) + '</div><input class="tick" type="checkbox" data-chk="' + k + '"' + (S.c[k] ? ' checked' : '') + ' aria-label="Done: ' + esc(st[0]) + '"></li>'; }).join('') + '</ol>' +
+    '<div class="cols"><div><h3>Set up</h3><ul class="dots">' + s.setup.map(function(t){ return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+    (s.watch.length ? '<h3>Watch for</h3><ul class="dots">' + s.watch.map(function(t){ return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '') + '</div><div>' +
+    (s.scores.length ? '<h3>Scores and cut-offs</h3><table class="cut">' + s.scores.map(function(r){ return '<tr><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td></tr>'; }).join('') + '</table>' : '') +
+    (s.nogo ? '<div class="alert"><span class="lab">Do not go on-road if</span><ul class="dots">' + s.nogo.map(function(t){ return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>' : '') +
+    (s.stop ? '<div class="alert"><span class="lab">Stop rule</span>' + esc(s.stop) + '</div>' : '') +
+    '<div class="say"><span class="lab">Say it like this</span>' + esc(s.say) + '</div></div></div>' +
+    (s.id === 's1' ? '<h3>WA licensing at a glance</h3><ul class="dots">' + WA_LICENCE.map(function(t){ return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '');
+  var rec = '<h2>Record</h2><div class="flags" data-flags="' + s.id + '"></div>' + RECORD[s.id]();
+  var notes = '<h2>Notes</h2><div class="notes">' + s.prompts.map(function(p, i){ return '<label class="nb"><span>' + esc(p) + '</span><textarea data-k="note_' + s.id + '_' + i + '">' + esc(V('note_' + s.id + '_' + i)) + '</textarea></label>'; }).join('') + '</div>';
+  return head('Section ' + s.n + ' of 8', s.title, '<div class="meta"><span class="pill">About ' + s.mins + ' min</span><span>' + esc(s.purpose) + '</span></div>') +
+    '<div class="tabs2 noprint" data-sec="' + s.id + '"><button type="button" data-tab="run"' + (tab === 'run' ? ' class="on"' : '') + '>Run sheet</button><button type="button" data-tab="rec"' + (tab === 'rec' ? ' class="on"' : '') + '>Record</button><button type="button" data-tab="notes"' + (tab === 'notes' ? ' class="on"' : '') + '>Notes</button></div>' +
+    '<div class="pane" data-pane="run"' + (tab === 'run' ? '' : ' hidden') + '>' + run + '</div>' +
+    '<div class="pane" data-pane="rec"' + (tab === 'rec' ? '' : ' hidden') + '>' + rec + '</div>' +
+    '<div class="pane" data-pane="notes"' + (tab === 'notes' ? '' : ' hidden') + '>' + notes + '</div>';
+}
+function viewCutoffs(){
+  var rows = [];
+  SECTIONS.forEach(function(s){ s.scores.forEach(function(r){ if (r[0] !== 'Action') rows.push('<tr><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td><td style="width:44px;color:var(--faint)">S' + s.n + '</td></tr>'); }); });
+  return head('Keep this open on the day', 'Cut-offs at a glance') + '<h3>Scores and thresholds</h3><table class="cut">' + rows.join('') + '</table>' +
+    '<div class="cols"><div class="alert"><span class="lab">Do not go on-road if</span><ul class="dots">' + SECTIONS[5].nogo.map(function(t){ return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>' +
+    '<div class="alert"><span class="lab">Stop rule on-road</span>' + esc(SECTIONS[6].stop) + '<span class="lab" style="margin-top:10px">Intervention codes</span>V = verbal prompt<br>P = physical (dual brake or steering)</div></div>' +
+    '<p class="note" style="margin-top:14px">Vision standards are from Austroads Assessing Fitness to Drive (private vehicles). Other thresholds come from each test’s published scoring. Screening results guide clinical reasoning; they do not decide fitness to drive on their own.</p>';
+}
+function viewPrint(){
+  return head('Paper and data', 'Print kit and data') +
+    '<h3>Print</h3><div class="btnrow" style="margin-top:0"><button type="button" class="btn dark" data-print="client">Client sheets</button><button type="button" class="btn" data-print="blank">Blank pack (run sheets, record forms, notes)</button><button type="button" class="btn" data-print="record">This assessment, filled in</button></div>' +
+    '<p class="note">Client sheets: Estus consent form, Trail Making A and B with samples, clock drawing sheet, and the WA Road Law and Road Craft Screen. Print single-sided.</p>' +
+    '<div class="card" style="margin-top:12px"><b>Print from your licensed copies</b><p class="note" style="margin:6px 0 0">These tests are copyright and are not stored in this public app. Print them from Drive: <i>My Drive / 02 Driving OT / Driving Resources</i>.</p><ul class="dots" style="margin-top:6px"><li>Bells test (client sheet and your scoring sheet)</li><li>OT Drive Home Maze (OT-DORA)</li><li>Snellgrove Maze (practice and task)</li><li>Adelaide Driving Self-Efficacy Scale (ADSES)</li><li>DriveSafe and DriveAware run on the iPad</li></ul></div>' +
+    '<h3>Data</h3><div class="btnrow" style="margin-top:0"><button type="button" class="btn" id="exportBtn">Export this assessment (.json)</button><button type="button" class="btn" id="importBtn">Import</button><input type="file" id="importFile" accept="application/json,.json" hidden><button type="button" class="btn stop" id="newBtn">Start a new assessment</button></div>' +
+    '<p class="note">Saved in this browser only. This page is public, but your entries never leave this device unless you export them. Export to the client file before starting a new assessment.</p>';
+}
+function render(r){
+  route = ROUTES.indexOf(r) >= 0 ? r : 'overview';
+  var s = SECTIONS.filter(function(x){ return x.id === route; })[0];
+  var html = route === 'overview' ? viewOverview() : route === 'day' ? viewDay() : route === 'cutoffs' ? viewCutoffs() : route === 'print' ? viewPrint() : viewSection(s);
+  $('#views').innerHTML = '<section class="view">' + html + '</section>';
+  refreshFlags();
+  syncTimers();
+}
+function renderAllForPrint(){
+  var parts = ['<section class="view">' + viewOverview() + '</section>', '<section class="view">' + viewDay() + '</section>', '<section class="view">' + viewCutoffs() + '</section>'];
+  SECTIONS.forEach(function(s){ parts.push('<section class="view">' + viewSection(s) + '</section>'); });
+  $('#views').innerHTML = parts.join('');
+  $$('#views input[type=date], #views input[type=time]').forEach(function(i){ if (!i.value) i.type = 'text'; });
+  refreshFlags();
+}
+
+/* ======================= CLIENT SHEETS ======================= */
+function sheetHead(t, sub){ return '<div class="hd"><div><div class="bandsm"><span class="c1"></span><span class="c2"></span><span class="c3"></span><span class="c4"></span></div><div class="t">' + t + '</div></div><div style="text-align:right;font-family:var(--display);font-weight:700;font-size:15pt;line-height:.9">ESTUS<br><span style="font-size:7pt;letter-spacing:.34em;font-weight:600">HEALTH</span></div></div>' + (sub || ''); }
+function nameLine(){ return '<div class="line">Name <span></span> Date <span style="flex:.5"></span></div>'; }
+function tmtSvg(pts, w, h, r, extra){
+  var c = pts.map(function(p){ var x = p[0] / 1000 * w, y = p[1] / 1000 * h; return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r + '" fill="#fff" stroke="#000" stroke-width="2"/><text x="' + x.toFixed(1) + '" y="' + (y + r * 0.36).toFixed(1) + '" font-size="' + (r * 0.95).toFixed(1) + '" font-weight="700" text-anchor="middle" font-family="Arial">' + p[2] + '</text>'; }).join('');
+  var pad = r + 6;
+  return '<svg viewBox="' + (-pad) + ' ' + (-pad) + ' ' + (w + pad * 2) + ' ' + (h + pad * 2) + '" xmlns="http://www.w3.org/2000/svg"><rect x="' + (-pad + 1.5) + '" y="' + (-pad + 1.5) + '" width="' + (w + pad * 2 - 3) + '" height="' + (h + pad * 2 - 3) + '" fill="#fff" stroke="#000" stroke-width="2"/>' + c + (extra || '') + '</svg>';
+}
+function tag(t, x, y){ return '<text x="' + x + '" y="' + y + '" font-size="15" font-weight="700" text-anchor="middle" font-family="Arial">' + t + '</text>'; }
+function clientSheets(){
+  var p = [];
+  p.push('<section class="sheet">' + sheetHead('Consent: OT driver assessment') +
+    '<p>I, ________________________________________, agree to Estus Health completing an occupational therapy driver assessment with me.</p>' +
+    '<p><b>The assessment may include:</b></p><ul><li>an interview about my health, medications, driving history and goals</li><li>off-road checks of my vision, hearing, movement, thinking skills and road rule knowledge</li><li>an on-road drive in a dual-control car with a driving instructor</li><li>dash cam recording of the on-road drive (front view and inside the car, including sound), so the report is accurate. Footage is kept securely in my client file and is not shared without my consent.</li></ul>' +
+    '<p><b>I understand that:</b></p><ul><li>I can ask for a break, or stop the assessment, at any time.</li><li>The occupational therapist or instructor may end the drive if it is not safe to keep going.</li><li>The licensing decision is made by the WA Department of Transport and Major Infrastructure, not by Estus Health.</li><li>If there is a serious risk to road safety, the occupational therapist may need to share relevant information with my doctor or the licensing authority. They will talk with me first wherever possible.</li><li>My information is handled under the Estus Health privacy policy.</li></ul>' +
+    '<p><b>The report can be sent to:</b> &nbsp;☐ me &nbsp;☐ my referrer &nbsp;☐ my GP &nbsp;☐ my NDIS plan manager or support coordinator &nbsp;☐ other: ______________________</p>' +
+    '<p><b>Dash cam recording:</b> &nbsp;☐ I agree &nbsp;☐ I do not agree</p>' +
+    '<table style="width:100%;margin-top:18px;border-collapse:collapse">' + ['Client','Parent, guardian or decision maker (if needed)','Occupational therapist'].map(function(r){ return '<tr><td style="padding:14px 0 4px;width:42%">' + r + '</td><td style="border-bottom:1px solid #000">Signed</td><td style="border-bottom:1px solid #000;width:22%">Date</td></tr>'; }).join('') + '</table></section>');
+  p.push('<section class="sheet">' + sheetHead('Trail Making Part A: Sample') + '<div style="max-width:150mm;margin:18mm auto 0">' + tmtSvg(TMT.AS, 600, 370, 20, tag('Begin', 0.499 * 600, 0.609 * 370 + 40) + tag('End', 0.445 * 600, 0.304 * 370 - 28)) + '</div></section>');
+  p.push('<section class="sheet">' + sheetHead('Trail Making Part A') + nameLine() + '<div style="max-width:178mm;margin:2mm auto 0">' + tmtSvg(TMT.A, 600, 730, 19) + '</div></section>');
+  p.push('<section class="sheet">' + sheetHead('Trail Making Part B: Sample') + '<div style="max-width:150mm;margin:18mm auto 0">' + tmtSvg(TMT.BS, 600, 370, 20, tag('Begin', 0.451 * 600, 0.550 * 370 + 40) + tag('End', 0.317 * 600, 0.298 * 370 - 28)) + '</div></section>');
+  p.push('<section class="sheet">' + sheetHead('Trail Making Part B') + nameLine() + '<div style="max-width:178mm;margin:2mm auto 0">' + tmtSvg(TMT.B, 600, 715, 19) + '</div></section>');
+  p.push('<section class="sheet">' + sheetHead('Clock drawing') + nameLine() + '<p style="font-size:13pt;margin-top:10mm">“Please draw a clock. Put in all the numbers and set the time to ten past eleven.”</p></section>');
+  p.push('<section class="sheet">' + sheetHead('WA road law and road craft', '<p style="font-size:10.5pt">Circle one answer for each question.</p>') + nameLine() +
+    WAQ.map(function(q, i){ return '<div class="qq"><b>' + (i + 1) + '. ' + esc(q[0]) + '</b><ol>' + q[1].map(function(o){ return '<li>' + esc(o) + '</li>'; }).join('') + '</ol></div>'; }).join('') + '</section>');
+  for (var pg = 0; pg < 2; pg++){
+    p.push('<section class="sheet">' + sheetHead('WA intersections', pg === 0 ? '<p style="font-size:10.5pt">Write the order the road users go: 1st, 2nd, 3rd. P is a pedestrian. Arrows show where each vehicle is going.</p>' : '') +
+      '<div class="dg">' + WAD.slice(pg * 4, pg * 4 + 4).map(function(d, j){ var i = pg * 4 + j; return '<figure>' + diagram(d, 100 + i, true) + '<figcaption><b>' + (i + 1) + '. ' + esc(d.title) + '</b><br>1st ______ &nbsp; 2nd ______' + (d.ans.length > 2 ? ' &nbsp; 3rd ______' : '') + '</figcaption></figure>'; }).join('') + '</div></section>');
+  }
+  return p.join('');
+}
+
+/* ======================= TIMERS ======================= */
+var running = {};
+function fmtClock(ms){ var s = ms / 1000, m = Math.floor(s / 60); return m + ':' + ('0' + (s - m * 60).toFixed(1)).slice(-4); }
+function syncTimers(){ $$('[data-timer]').forEach(function(el){ var id = el.getAttribute('data-timer'), r = running[id], b = el.querySelector('[data-t="start"]');
+  if (r){ b.textContent = 'Stop'; b.className = 'btn stop sm'; } else { b.textContent = 'Start'; b.className = 'btn go sm'; var t = num(id + '_t'); el.querySelector('.clock').textContent = t != null ? fmtClock(t * 1000) : '0:00.0'; } }); }
+setInterval(function(){ Object.keys(running).forEach(function(id){ var el = $('[data-timer="' + id + '"] .clock'); if (el) el.textContent = fmtClock(Date.now() - running[id]); }); }, 100);
+
+/* ======================= EVENTS ======================= */
+document.addEventListener('input', function(e){
+  var t = e.target;
+  if (t.hasAttribute && t.hasAttribute('data-k')){ S.v[t.getAttribute('data-k')] = t.type === 'radio' ? t.value : t.value; save(); refreshFlags(); if (/^m_/.test(t.getAttribute('data-k'))) updateWho(); }
+  if (t.hasAttribute && t.hasAttribute('data-row')){ var r = S.rows[t.getAttribute('data-row')][+t.getAttribute('data-i')]; r[t.getAttribute('data-c')] = t.value; save(); }
+});
+document.addEventListener('change', function(e){
+  var t = e.target;
+  if (t.hasAttribute && t.hasAttribute('data-k') && (t.tagName === 'SELECT' || t.type === 'radio')){ S.v[t.getAttribute('data-k')] = t.value; save(); refreshFlags(); }
+  if (t.hasAttribute && t.hasAttribute('data-chk')){ S.c[t.getAttribute('data-chk')] = t.checked; var li = t.closest('ol.steps li'); if (li) li.classList.toggle('done', t.checked); save(); refreshFlags(); }
+  if (t.id === 'importFile' && t.files && t.files[0]){ var fr = new FileReader(); fr.onload = function(){ try { var d = JSON.parse(fr.result); if (!d || !d.v) throw 0; S = Object.assign(blankState(), d); save(); render(route); toast('Imported'); } catch(err){ toast('That file is not a day pack export'); } }; fr.readAsText(t.files[0]); t.value = ''; }
+});
+document.addEventListener('click', function(e){
+  var b = e.target.closest('button, a[data-r]'); if (!b) return;
+  if (b.parentElement && b.parentElement.hasAttribute('data-seg')){ var k = b.parentElement.getAttribute('data-seg'), v = b.getAttribute('data-val'); S.v[k] = S.v[k] === v ? '' : v; $$('button', b.parentElement).forEach(function(x){ x.classList.toggle('on', S.v[k] === x.getAttribute('data-val')); }); save(); refreshFlags(); return; }
+  if (b.hasAttribute('data-tab')){ var sec = b.parentElement.getAttribute('data-sec'); S._tab = S._tab || {}; S._tab[sec] = b.getAttribute('data-tab'); $$('[data-tab]', b.parentElement).forEach(function(x){ x.classList.toggle('on', x === b); }); $$('.pane').forEach(function(p){ p.hidden = p.getAttribute('data-pane') !== S._tab[sec]; }); save(); return; }
+  if (b.hasAttribute('data-addrow')){ S.rows[b.getAttribute('data-addrow')].push({}); save(); render(route); return; }
+  if (b.hasAttribute('data-delrow')){ var rr = S.rows[b.getAttribute('data-delrow')]; rr.splice(+b.getAttribute('data-i'), 1); if (!rr.length) rr.push({}); save(); render(route); return; }
+  if (b.hasAttribute('data-tal')){ var row = S.rows.stages[+b.getAttribute('data-i')], c = b.getAttribute('data-tal'); row[c] = Math.max(0, (row[c] || 0) + (+b.getAttribute('data-d'))); b.parentElement.querySelector('b').textContent = row[c]; save(); refreshFlags(); return; }
+  if (b.hasAttribute('data-t')){ var tel = b.closest('[data-timer]'), id = tel.getAttribute('data-timer');
+    if (b.getAttribute('data-t') === 'start'){ if (running[id]){ var secs = Math.round((Date.now() - running[id]) / 100) / 10; delete running[id]; S.v[id + '_t'] = String(secs); tel.querySelector('[data-k="' + id + '_t"]').value = secs; save(); refreshFlags(); } else running[id] = Date.now(); }
+    else { delete running[id]; S.v[id + '_t'] = ''; tel.querySelector('[data-k="' + id + '_t"]').value = ''; save(); refreshFlags(); }
+    syncTimers(); return; }
+  if (b.id === 'keyBtn'){ S._key = !S._key; render(route); return; }
+  if (b.hasAttribute('data-go')){ location.hash = '#' + b.getAttribute('data-go'); return; }
+  if (b.hasAttribute('data-print')){ doPrint(b.getAttribute('data-print')); return; }
+  if (b.id === 'exportBtn'){ var blob = new Blob([JSON.stringify(S, null, 2)], {type:'application/json'}); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'day-pack-' + (V('m_client') || 'client').replace(/[^\w-]+/g, '-') + '-' + (V('m_date') || new Date().toISOString().slice(0, 10)) + '.json'; document.body.appendChild(a); a.click(); a.remove(); return; }
+  if (b.id === 'importBtn'){ $('#importFile').click(); return; }
+  if (b.id === 'newBtn'){ if (confirm('Start a new assessment? This clears everything saved here. Export first if you need it.')){ S = blankState(); save(); location.hash = '#overview'; render('overview'); toast('New assessment started'); } return; }
+});
+function doPrint(mode){
+  document.body.classList.remove('print-client','blank');
+  if (mode === 'client'){ $('#client').innerHTML = clientSheets(); document.body.classList.add('print-client'); window.print(); return; }
+  if (mode === 'blank'){ pendingRestore = S; S = blankState(); document.body.classList.add('blank'); }
+  renderAllForPrint();
+  window.print();
+  if (!('onafterprint' in window)) restoreAfterPrint();
+}
+var pendingRestore = null;
+function restoreAfterPrint(){ if (pendingRestore){ S = pendingRestore; pendingRestore = null; } document.body.classList.remove('print-client','blank'); render(route); }
+window.addEventListener('afterprint', restoreAfterPrint);
+window.addEventListener('hashchange', function(){ render(location.hash.slice(1)); window.scrollTo(0, 0); });
+window.__dayPack = {state:function(){ return S; }, clientSheets:clientSheets, renderAllForPrint:renderAllForPrint, render:render, blank:function(){ S = blankState(); }};
+
+load();
+render(location.hash.slice(1) || 'overview');
+})();
+</script>
+</body>
+</html>
